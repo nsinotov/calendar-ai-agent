@@ -12,6 +12,7 @@ A Telegram assistant that manages Google Calendar and a personal notes list thro
 - Conversation history with configurable retention; `/clear` resets it
 - Anthropic credit tracking with low-balance and out-of-credits warnings
 - Provider-agnostic LLM layer: Anthropic and OpenAI implemented behind one interface
+- Configurable logging: error/warn/info levels, console and file providers, separate debug toggle
 - Single-user access via a Telegram allow-list
 - Docker deployment behind a Telegram webhook
 
@@ -32,6 +33,7 @@ src/
   notes/       notes provider interface + SQLite implementation
   memory/      conversation history storage
   db/          SQLite connection and schema
+  logging/     logger + console/file log providers
   scheduler/   summaries, event reminders, cleanup jobs
   config/      environment config
   index.ts     entry point

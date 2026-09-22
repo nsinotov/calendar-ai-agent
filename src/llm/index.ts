@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
+import type { Logger } from "../logging/index.js";
 import { AnthropicProvider, type Effort } from "./anthropic-provider.js";
+import { LoggingLlmProvider } from "./logging-provider.js";
 import { OpenAiProvider } from "./openai-provider.js";
 import type { LlmProvider } from "./types.js";
 
@@ -23,7 +25,11 @@ export type LlmConfig =
       maxTokens: number;
     };
 
-export function createLlmProvider(config: LlmConfig): LlmProvider {
+export function createLlmProvider(config: LlmConfig, logger: Logger): LlmProvider {
+  return new LoggingLlmProvider(createRawProvider(config), logger);
+}
+
+function createRawProvider(config: LlmConfig): LlmProvider {
   switch (config.provider) {
     case "anthropic":
       return new AnthropicProvider(new Anthropic({ apiKey: config.apiKey }), {

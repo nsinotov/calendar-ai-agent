@@ -9,6 +9,19 @@ const boolFromEnv = (fallback: boolean) =>
 const timeOfDay = (fallback: string) =>
   z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:MM").default(fallback);
 
+// Comma-separated list, e.g. "error,warn,info" -> ["error", "warn", "info"].
+const csvEnum = <T extends [string, ...string[]]>(values: T, fallback: string) =>
+  z
+    .string()
+    .default(fallback)
+    .transform((value) =>
+      value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    )
+    .pipe(z.array(z.enum(values)).min(1));
+
 const envSchema = z.object({
   LLM_PROVIDER: z.enum(["anthropic", "openai"]).default("anthropic"),
   LLM_MODEL: z.string().min(1).default("claude-sonnet-5"),
@@ -57,6 +70,13 @@ const envSchema = z.object({
   OLD_EVENTS_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
 
   DATA_DIR: z.string().min(1).default("./data"),
+
+  DEBUG_ENABLED: boolFromEnv(false),
+  LOG_LEVELS: csvEnum(["error", "warn", "info"], "error,warn,info"),
+  LOG_PROVIDERS: csvEnum(["console", "file"], "console"),
+  LOG_RETENTION_DAYS: z.coerce.number().int().positive().default(14),
+  // Where the file provider writes logs. Defaults to DATA_DIR/logs.
+  LOG_DIR: z.string().min(1).optional(),
 });
 
 export const env = envSchema

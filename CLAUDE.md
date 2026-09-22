@@ -36,6 +36,7 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 src/
   agent/         — core agent logic, tool definitions, conversation loop
   llm/           — LLM provider interface + Anthropic implementation
+  logging/       — logger + console/file log providers
   calendar/      — calendar provider interface + implementations
   messaging/     — messaging provider interface + implementations
   notes/         — notes provider interface + SQLite implementation
