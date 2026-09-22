@@ -28,6 +28,7 @@ export class CompositeLogger implements Logger {
 
   private dispatch(level: LogLevel, message: string, context?: Record<string, unknown>): void {
     const entry: LogEntry = { timestamp: new Date().toISOString(), level, message, ...(context && { context }) };
+
     for (const provider of this.options.providers) {
       try {
         provider.write(entry);

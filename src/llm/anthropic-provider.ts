@@ -50,6 +50,7 @@ function toAnthropicMessage(message: Message): Anthropic.MessageParam {
   if (typeof message.content === "string") {
     return { role: message.role, content: message.content };
   }
+
   return { role: message.role, content: message.content.map(toAnthropicBlock) };
 }
 
@@ -79,6 +80,7 @@ function toAnthropicTool(tool: ToolDefinition): Anthropic.Tool {
 
 function fromAnthropicResponse(response: Anthropic.Message): LlmResponse {
   const content: LlmResponse["content"] = [];
+
   for (const block of response.content) {
     if (block.type === "text") {
       content.push({ type: "text", text: block.text });
@@ -93,6 +95,7 @@ function fromAnthropicResponse(response: Anthropic.Message): LlmResponse {
   }
 
   const { usage } = response;
+
   return {
     content,
     stopReason: toStopReason(response.stop_reason),
@@ -138,6 +141,7 @@ function toLlmError(error: unknown): LlmError {
     return new LlmError("unavailable", error.message, { cause: error });
   }
   const message = error instanceof Error ? error.message : String(error);
+
   return new LlmError("unknown", message, { cause: error });
 }
 

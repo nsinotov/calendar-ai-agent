@@ -109,7 +109,6 @@ export const env = envSchema
   })
   .parse(withoutEmptyValues(process.env));
 
-
 // `KEY=` in a .env file means "not set", not an empty string.
 function withoutEmptyValues(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   return Object.fromEntries(Object.entries(source).filter(([, value]) => value !== ""));

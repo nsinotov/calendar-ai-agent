@@ -30,6 +30,7 @@ export class LoggingLlmProvider implements LlmProvider {
         durationMs: Date.now() - startedAt,
       });
       this.logger.debug("llm.response.detail", { content: response.content });
+
       return response;
     } catch (error) {
       this.logger.error("llm.error", {

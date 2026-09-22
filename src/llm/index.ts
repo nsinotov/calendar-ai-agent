@@ -9,7 +9,7 @@ import type { LlmProvider } from "./types.js";
 export type { LlmProvider } from "./types.js";
 export { LlmError } from "./errors.js";
 
-// A union on `provider`: adding OpenAI later means one more member and one more case.
+// A union on `provider`: a new provider means one more member and one more case.
 export type LlmConfig =
   | {
       provider: "anthropic";

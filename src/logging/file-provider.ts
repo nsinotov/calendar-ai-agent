@@ -29,6 +29,7 @@ export class FileLogProvider implements LogProvider {
 
   private cleanup(): void {
     const cutoff = Date.now() - this.retentionDays * DAY_MS;
+
     for (const name of readdirSync(this.dir)) {
       const match = LOG_FILE_NAME.exec(name);
       if (!match) continue;

@@ -66,6 +66,7 @@ function toOpenAiMessages(message: Message): ChatCompletionMessageParam[] {
       .filter((block): block is Extract<ContentBlock, { type: "text" }> => block.type === "text")
       .map((block) => block.text)
       .join("\n");
+
     return [{ role: "user", content: text }];
   }
 
@@ -76,6 +77,7 @@ function toOpenAiMessages(message: Message): ChatCompletionMessageParam[] {
   const toolCalls = message.content.filter(
     (block): block is Extract<ContentBlock, { type: "tool_call" }> => block.type === "tool_call",
   );
+
   return [
     {
       role: "assistant",
@@ -112,6 +114,7 @@ function fromOpenAiResponse(response: OpenAI.ChatCompletion): LlmResponse {
   if (choice.message.content) {
     content.push({ type: "text", text: choice.message.content });
   }
+
   for (const call of choice.message.tool_calls ?? []) {
     if (call.type !== "function") continue;
     content.push({
@@ -123,6 +126,7 @@ function fromOpenAiResponse(response: OpenAI.ChatCompletion): LlmResponse {
   }
 
   const usage = response.usage;
+
   return {
     content,
     stopReason: toStopReason(choice.finish_reason),
@@ -136,6 +140,7 @@ function fromOpenAiResponse(response: OpenAI.ChatCompletion): LlmResponse {
 function parseArguments(raw: string): Record<string, unknown> {
   try {
     const parsed: unknown = JSON.parse(raw);
+
     return isRecord(parsed) ? parsed : {};
   } catch {
     // The model does not always emit valid JSON; an empty call is safer than throwing.
@@ -162,6 +167,7 @@ function toLlmError(error: unknown): LlmError {
     if (error.code === "insufficient_quota") {
       return new LlmError("insufficient_credits", error.message, { cause: error });
     }
+
     return new LlmError("rate_limit", error.message, { cause: error });
   }
   if (error instanceof OpenAI.AuthenticationError) {
@@ -171,6 +177,7 @@ function toLlmError(error: unknown): LlmError {
     return new LlmError("unavailable", error.message, { cause: error });
   }
   const message = error instanceof Error ? error.message : String(error);
+
   return new LlmError("unknown", message, { cause: error });
 }
 
