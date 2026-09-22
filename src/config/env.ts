@@ -10,11 +10,22 @@ const timeOfDay = (fallback: string) =>
   z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:MM").default(fallback);
 
 const envSchema = z.object({
-  ANTHROPIC_API_KEY: z.string().min(1),
-  ANTHROPIC_MODEL: z.string().min(1).default("claude-sonnet-5"),
+  LLM_PROVIDER: z.enum(["anthropic", "openai"]).default("anthropic"),
+  LLM_MODEL: z.string().min(1).default("claude-sonnet-5"),
+  LLM_MAX_TOKENS: z.coerce.number().int().positive().default(8000),
+  // How much the model "thinks" per answer; unset = provider default
+  LLM_EFFORT: z.enum(["low", "medium", "high", "xhigh", "max"]).optional(),
+  // Safety limit for tool-call rounds within one user message
+  LLM_MAX_TOOL_ITERATIONS: z.coerce.number().int().positive().default(8),
   // Prepaid credit balance in USD; enables local spend tracking and low-balance warnings
-  ANTHROPIC_BUDGET_USD: z.coerce.number().positive().optional(),
-  ANTHROPIC_LOW_BALANCE_USD: z.coerce.number().positive().default(2),
+  LLM_BUDGET_USD: z.coerce.number().positive().optional(),
+  LLM_LOW_BALANCE_USD: z.coerce.number().positive().default(2),
+  // Model prices in USD per 1M tokens, needed to estimate spend when a budget is set
+  LLM_INPUT_PRICE_PER_MTOK: z.coerce.number().nonnegative().optional(),
+  LLM_OUTPUT_PRICE_PER_MTOK: z.coerce.number().nonnegative().optional(),
+
+  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  OPENAI_API_KEY: z.string().min(1).optional(),
 
   TELEGRAM_BOT_TOKEN: z.string().min(1),
   TELEGRAM_ALLOWED_USER_ID: z.coerce.number().int().positive(),
@@ -48,5 +59,39 @@ const envSchema = z.object({
   DATA_DIR: z.string().min(1).default("./data"),
 });
 
-export const env = envSchema.parse(process.env);
+export const env = envSchema
+  .superRefine((value, ctx) => {
+    if (value.LLM_PROVIDER === "anthropic" && !value.ANTHROPIC_API_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["ANTHROPIC_API_KEY"],
+        message: "Required when LLM_PROVIDER=anthropic",
+      });
+    }
+    if (value.LLM_PROVIDER === "openai" && !value.OPENAI_API_KEY) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["OPENAI_API_KEY"],
+        message: "Required when LLM_PROVIDER=openai",
+      });
+    }
+    if (
+      value.LLM_BUDGET_USD !== undefined &&
+      (value.LLM_INPUT_PRICE_PER_MTOK === undefined ||
+        value.LLM_OUTPUT_PRICE_PER_MTOK === undefined)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["LLM_BUDGET_USD"],
+        message: "Set LLM_INPUT_PRICE_PER_MTOK and LLM_OUTPUT_PRICE_PER_MTOK to track a budget",
+      });
+    }
+  })
+  .parse(withoutEmptyValues(process.env));
+
+
+// `KEY=` in a .env file means "not set", not an empty string.
+function withoutEmptyValues(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return Object.fromEntries(Object.entries(source).filter(([, value]) => value !== ""));
+}
 

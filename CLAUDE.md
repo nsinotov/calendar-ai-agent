@@ -5,7 +5,7 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 ## Tech Stack
 
 - **Language:** TypeScript (Node.js 22)
-- **LLM:** Claude API via `@anthropic-ai/sdk`
+- **LLM:** Claude API (`@anthropic-ai/sdk`) or OpenAI (`openai`) behind a provider-neutral interface
 - **Messaging:** Telegram Bot API via `grammy`
 - **Calendar:** Google Calendar API via `googleapis`
 - **Build:** tsx (dev), tsup (prod)
@@ -35,10 +35,12 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 ```text
 src/
   agent/         — core agent logic, tool definitions, conversation loop
+  llm/           — LLM provider interface + Anthropic implementation
   calendar/      — calendar provider interface + implementations
   messaging/     — messaging provider interface + implementations
   notes/         — notes provider interface + SQLite implementation
   memory/        — conversation history storage
+  db/            — SQLite connection and schema
   scheduler/     — summaries, event reminders, old-events cleanup
   config/        — environment config
   index.ts       — entry point

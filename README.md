@@ -11,6 +11,7 @@ A Telegram assistant that manages Google Calendar and a personal notes list thro
 - Optional cleanup of old calendar events
 - Conversation history with configurable retention; `/clear` resets it
 - Anthropic credit tracking with low-balance and out-of-credits warnings
+- Provider-agnostic LLM layer: Anthropic and OpenAI implemented behind one interface
 - Single-user access via a Telegram allow-list
 - Docker deployment behind a Telegram webhook
 
@@ -25,10 +26,12 @@ Tool-use agent: Claude decides which calendar and notes tools to call. Calendar,
 ```text
 src/
   agent/       agent loop, system prompt, tool definitions
+  llm/         LLM provider interface + Anthropic implementation
   calendar/    calendar provider interface + Google implementation
   messaging/   messaging provider interface + Telegram implementation
   notes/       notes provider interface + SQLite implementation
   memory/      conversation history storage
+  db/          SQLite connection and schema
   scheduler/   summaries, event reminders, cleanup jobs
   config/      environment config
   index.ts     entry point
