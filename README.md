@@ -12,7 +12,9 @@ A Telegram assistant that manages Google Calendar and a personal notes list thro
 - Conversation history with configurable retention; `/clear` resets it
 - Anthropic credit tracking with low-balance and out-of-credits warnings
 - Provider-agnostic LLM layer: Anthropic and OpenAI implemented behind one interface
+- Provider-agnostic calendar layer: Google Calendar implemented behind the same pattern
 - Configurable logging: error/warn/info levels, console and file providers, separate debug toggle
+- Multi-user: one Telegram bot serves several people, each with their own settings and calendar credentials
 - Single-user access via a Telegram allow-list
 - Docker deployment behind a Telegram webhook
 

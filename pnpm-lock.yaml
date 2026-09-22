@@ -11,6 +11,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.127.0
         version: 0.127.0(zod@3.25.76)
+      gaxios:
+        specifier: ^7.3.1
+        version: 7.3.1
       googleapis:
         specifier: ^181.0.0
         version: 181.0.0

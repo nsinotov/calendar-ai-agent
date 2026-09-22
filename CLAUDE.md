@@ -16,12 +16,12 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 ## Features
 
 - Calendar management by natural language (Google Calendar)
-- Single user (Telegram allow-list), configurable conversation language (default Ukrainian)
+- Multi-user (shared bot, per-user settings and encrypted calendar credentials in SQLite), configurable conversation language (default Ukrainian)
 - Reminders: weekly summary, daily summary, and a configurable lead-time reminder before each timed event
 - Configurable first day of the week and old-events handling (keep/delete)
 - Conversation history kept for N days (configurable), `/clear` resets it
 - Notes/reminders by context ("buy in market"); agent recalls them on request and removes done items
-- Warns the user when Anthropic credits run out
+- Warns when the shared LLM balance runs low or out
 - Docker deployment
 
 ## Architecture
@@ -37,7 +37,7 @@ src/
   agent/         — core agent logic, tool definitions, conversation loop
   llm/           — LLM provider interface + Anthropic implementation
   logging/       — logger + console/file log providers
-  calendar/      — calendar provider interface + implementations
+  calendar/      — calendar provider interface + Google implementation
   messaging/     — messaging provider interface + implementations
   notes/         — notes provider interface + SQLite implementation
   memory/        — conversation history storage

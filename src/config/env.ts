@@ -6,9 +6,6 @@ const boolFromEnv = (fallback: boolean) =>
     .default(fallback ? "true" : "false")
     .transform((value) => value === "true");
 
-const timeOfDay = (fallback: string) =>
-  z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:MM").default(fallback);
-
 // Comma-separated list, e.g. "error,warn,info" -> ["error", "warn", "info"].
 const csvEnum = <T extends [string, ...string[]]>(values: T, fallback: string) =>
   z
@@ -23,6 +20,8 @@ const csvEnum = <T extends [string, ...string[]]>(values: T, fallback: string) =
     .pipe(z.array(z.enum(values)).min(1));
 
 const envSchema = z.object({
+  // --- LLM: shared across all users, paid by the admin ---
+  // Defaults for new users (see add-user); each user can pick their own provider/model after.
   LLM_PROVIDER: z.enum(["anthropic", "openai"]).default("anthropic"),
   LLM_MODEL: z.string().min(1).default("claude-sonnet-5"),
   LLM_MAX_TOKENS: z.coerce.number().int().positive().default(8000),
@@ -41,35 +40,24 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().min(1).optional(),
 
   TELEGRAM_BOT_TOKEN: z.string().min(1),
-  TELEGRAM_ALLOWED_USER_ID: z.coerce.number().int().positive(),
   // Set for production (webhook); leave empty in dev (long polling)
   TELEGRAM_WEBHOOK_URL: z.string().url().optional(),
   TELEGRAM_WEBHOOK_SECRET: z.string().min(16).optional(),
   PORT: z.coerce.number().int().positive().default(3000),
 
+  // The app's own OAuth identity, shared across users; each user authorizes it
+  // separately and gets their own refresh token (stored per-user, encrypted).
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
-  GOOGLE_REFRESH_TOKEN: z.string().min(1),
-  GOOGLE_CALENDAR_ID: z.string().min(1).default("primary"),
 
-  LANGUAGE: z.string().min(2).default("uk"),
-  TIMEZONE: z.string().min(1).default("Europe/Kyiv"),
-  CONTEXT_RETENTION_DAYS: z.coerce.number().int().positive().default(7),
-
-  WEEK_START: z.enum(["monday", "sunday"]).default("monday"),
-
-  WEEKLY_REMINDER_ENABLED: boolFromEnv(true),
-  WEEKLY_REMINDER_TIME: timeOfDay("08:00"),
-  DAILY_REMINDER_ENABLED: boolFromEnv(true),
-  DAILY_REMINDER_TIME: timeOfDay("08:00"),
-  EVENT_REMINDER_ENABLED: boolFromEnv(true),
-  EVENT_REMINDER_MINUTES_BEFORE: z.coerce.number().int().positive().default(60),
+  // How often the scheduler checks every user's calendar for upcoming events
   CALENDAR_POLL_MINUTES: z.coerce.number().int().positive().default(15),
 
-  OLD_EVENTS_ACTION: z.enum(["keep", "delete"]).default("keep"),
-  OLD_EVENTS_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
-
   DATA_DIR: z.string().min(1).default("./data"),
+
+  // AES-256-GCM key for per-user secrets (Google refresh tokens, ...): 32 bytes, hex-encoded.
+  // Generate with: openssl rand -hex 32
+  SECRETS_ENCRYPTION_KEY: z.string().regex(/^[0-9a-f]{64}$/i, "Expected 64 hex characters (32 bytes)"),
 
   DEBUG_ENABLED: boolFromEnv(false),
   LOG_LEVELS: csvEnum(["error", "warn", "info"], "error,warn,info"),
