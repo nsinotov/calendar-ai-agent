@@ -65,6 +65,7 @@ Set `TELEGRAM_WEBHOOK_URL` to a public HTTPS URL that proxies to the container's
 - `pnpm build`: build for production
 - `pnpm start`: run the production build
 - `pnpm typecheck`: type-check the project
+- `pnpm test`: run unit tests
 
 ## License
 

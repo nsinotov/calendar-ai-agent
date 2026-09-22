@@ -50,6 +50,7 @@ src/
 ## Commands
 
 - `pnpm dev` — run in development mode
+- `pnpm test` — run unit tests (`node:test`)
 - `pnpm build` — build for production
 - `pnpm start` — run production build
 
