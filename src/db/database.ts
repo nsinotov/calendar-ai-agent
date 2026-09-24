@@ -36,6 +36,15 @@ export const SCHEMA = `
   );
   CREATE INDEX IF NOT EXISTS idx_notes_user ON notes (telegram_user_id, id);
 
+  -- Standing instructions from the user about assistant behaviour, stored as short English sentences.
+  CREATE TABLE IF NOT EXISTS user_preferences (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    telegram_user_id  INTEGER NOT NULL REFERENCES users (telegram_user_id),
+    text              TEXT    NOT NULL,
+    created_at        INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_user_preferences_user ON user_preferences (telegram_user_id, id);
+
   -- AES-256-GCM ciphertext of a provider's credential fields (e.g. a Google refresh token).
   CREATE TABLE IF NOT EXISTS user_secrets (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,

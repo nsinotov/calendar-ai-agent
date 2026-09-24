@@ -3,9 +3,11 @@ import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 import type { CalendarEvent, CalendarProvider, EventInput } from "../calendar/index.js";
 import { SCHEMA } from "../db/database.js";
+import { SqlitePreferencesStore } from "../memory/preferences-store.js";
 import { SqliteNotesProvider } from "../notes/sqlite-provider.js";
 import { createCalendarTools } from "./calendar-tools.js";
 import { createNotesTools } from "./notes-tools.js";
+import { createPreferencesTools } from "./preferences-tools.js";
 import type { Tool } from "./tool.js";
 
 function findTool(tools: Tool[], name: string): Tool {
@@ -140,5 +142,31 @@ test("notes tools add, list, remove and remove all for the bound user", async ()
   assert.equal(await findTool(tools, "remove_note").execute({ id: 999 }), '{"removed":false}');
   assert.equal(await findTool(tools, "remove_all_notes").execute({}), '{"removed":2}');
   assert.equal((db.prepare("SELECT COUNT(*) AS n FROM notes").get() as { n: number }).n, 1);
+});
+
+test("preferences tools add, update and remove the bound user's preferences", async () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec(SCHEMA);
+  db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0), (2, 0)").run();
+  const store = new SqlitePreferencesStore(db);
+  store.add(2, "Other user's rule");
+  const tools = createPreferencesTools(store, 1);
+
+  const added = JSON.parse(await findTool(tools, "add_preference").execute({ text: "Delete without asking." })) as { id: number };
+  assert.equal(await findTool(tools, "update_preference").execute({ id: added.id, text: "Ask before deleting." }), '{"updated":true}');
+  assert.deepEqual(store.list(1), [{ id: added.id, text: "Ask before deleting." }]);
+
+  assert.equal(await findTool(tools, "remove_preference").execute({ id: added.id }), '{"removed":true}');
+  assert.equal(await findTool(tools, "remove_preference").execute({ id: 999 }), '{"removed":false}');
+  assert.equal(store.list(2).length, 1);
+});
+
+test("add_preference rejects text longer than the limit", async () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec(SCHEMA);
+  db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0)").run();
+  const tools = createPreferencesTools(new SqlitePreferencesStore(db), 1);
+
+  await assert.rejects(findTool(tools, "add_preference").execute({ text: "x".repeat(301) }), /Invalid arguments/);
 });
 
