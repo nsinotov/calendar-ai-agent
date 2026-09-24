@@ -27,7 +27,8 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 - Scope restriction: only calendar/notes/reminders; off-topic requests declined by the model; extra topics via `ALLOWED_TOPICS`
 - Access control: unregistered Telegram IDs rejected without the LLM (static reply), repeat senders ignored
 - Experimental (env flag `SUGGESTIONS_ENABLED`, off by default): short rewritten activity memory from events and notes, LLM follow-up suggestions on request and in summaries; handles sensitive data
-- Warns when the shared LLM balance runs low or out
+- Shared LLM balance: low-balance warning goes to admins only; when the LLM reports no credits, all users get one broadcast and a static status reply (no LLM) to each message until it recovers
+- Roles: `admin` | `user`; admins are normal users who also get low-balance warnings and system errors in Telegram. No chat-based admin tools: adding users and editing secrets is CLI-only
 - Docker deployment
 
 ## Architecture
@@ -60,7 +61,7 @@ src/
 - `pnpm dev` — run in development mode
 - `pnpm test` — run unit tests (`node:test`)
 - `pnpm typecheck` — type-check the project
-- `pnpm add-user` — register a user and their credentials (run on the server)
+- `pnpm add-user` — register a user with a role and their credentials (run on the server)
 - `pnpm build` — build for production
 - `pnpm start` — run production build
 

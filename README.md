@@ -15,7 +15,8 @@ A Telegram assistant that manages Google Calendar and a personal notes list thro
 - Weekly and daily summaries of upcoming events, plus a reminder before each event (all configurable)
 - Optional cleanup of old calendar events
 - Conversation history with configurable retention; `/clear` resets it
-- Shared LLM credit tracking with low-balance and out-of-credits warnings
+- Shared LLM credit tracking: admins are warned when the balance runs low; when the LLM runs out of credits, all users get one notice and a short status reply to any message until it recovers
+- Admin role: admins are regular users who also receive low-balance warnings and system errors in Telegram. Users and secrets are managed only through the server CLI, not through chat
 - Provider-agnostic LLM layer: Anthropic and OpenAI implemented behind one interface
 - Provider-agnostic calendar layer: Google Calendar implemented behind the same pattern
 - Configurable logging: error/warn/info levels, console and file providers, separate debug toggle
@@ -60,7 +61,7 @@ pnpm install
 pnpm dev
 ```
 
-5. Register each user on the server (their Telegram user ID, basics and Google refresh token are stored encrypted):
+5. Register each user on the server, including at least one with the admin role (Telegram user ID, role, basics and Google refresh token; secrets are stored encrypted):
 
 ```bash
 pnpm add-user
@@ -79,7 +80,7 @@ Set `TELEGRAM_WEBHOOK_URL` to a public HTTPS URL that proxies to the container's
 - `pnpm dev`: run in development mode
 - `pnpm build`: build for production
 - `pnpm start`: run the production build
-- `pnpm add-user`: register a user and their credentials (run on the server)
+- `pnpm add-user`: register a user with a role and their credentials (run on the server)
 - `pnpm typecheck`: type-check the project
 - `pnpm test`: run unit tests
 
