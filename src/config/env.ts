@@ -36,6 +36,17 @@ const envSchema = z.object({
   LLM_INPUT_PRICE_PER_MTOK: z.coerce.number().nonnegative().optional(),
   LLM_OUTPUT_PRICE_PER_MTOK: z.coerce.number().nonnegative().optional(),
 
+  // Extra topics the assistant may help with beyond calendar and notes, e.g. "weather,cooking"
+  ALLOWED_TOPICS: z
+    .string()
+    .default("")
+    .transform((value) =>
+      value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
 
