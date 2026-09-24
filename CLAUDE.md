@@ -9,7 +9,7 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 - **Messaging:** Telegram Bot API via `grammy`
 - **Calendar:** Google Calendar API via `googleapis`
 - **Build:** tsx (dev), tsup (prod)
-- **Storage:** SQLite (`node:sqlite`) for conversation history and notes
+- **Storage:** SQLite (`node:sqlite`) for users, settings, encrypted credentials, conversation history and notes
 - **Deploy:** Docker on a VPS
 - **Package manager:** pnpm
 
@@ -35,13 +35,15 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 ```text
 src/
   agent/         — core agent logic, tool definitions, conversation loop
-  llm/           — LLM provider interface + Anthropic implementation
+  llm/           — LLM provider interface + Anthropic and OpenAI implementations
   logging/       — logger + console/file log providers
   calendar/      — calendar provider interface + Google implementation
   messaging/     — messaging provider interface + implementations
   notes/         — notes provider interface + SQLite implementation
-  memory/        — conversation history storage
+  memory/        — conversation history and per-user settings
   db/            — SQLite connection and schema
+  secrets/       — encryption and per-user credential storage
+  scripts/       — admin CLI (`pnpm add-user`)
   scheduler/     — summaries, event reminders, old-events cleanup
   config/        — environment config
   index.ts       — entry point
@@ -51,6 +53,7 @@ src/
 
 - `pnpm dev` — run in development mode
 - `pnpm test` — run unit tests (`node:test`)
+- `pnpm add-user` — register a user and their credentials (run on the server)
 - `pnpm build` — build for production
 - `pnpm start` — run production build
 
