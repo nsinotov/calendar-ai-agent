@@ -47,6 +47,9 @@ const envSchema = z.object({
         .filter(Boolean),
     ),
 
+  // Experimental: activity memory and the suggestions tool. Off by default.
+  SUGGESTIONS_ENABLED: boolFromEnv(false),
+
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
 

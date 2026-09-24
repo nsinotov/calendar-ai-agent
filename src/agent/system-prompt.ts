@@ -5,10 +5,12 @@ export interface SystemPromptInput {
   settings: UserSettings;
   allowedTopics: string[];
   preferences: Preference[];
+  // Experimental activity memory; omit (or null) when the suggestions feature is off.
+  activitySummary?: string | null;
   now: Date;
 }
 
-export function buildSystemPrompt({ settings, allowedTopics, preferences, now }: SystemPromptInput): string {
+export function buildSystemPrompt({ settings, allowedTopics, preferences, activitySummary, now }: SystemPromptInput): string {
   const language = languageName(settings.language);
   const sections = [
     "You are a personal assistant inside a chat app. You manage the user's calendar events and their notes/reminders using the provided tools.",
@@ -38,6 +40,7 @@ export function buildSystemPrompt({ settings, allowedTopics, preferences, now }:
       "- When the user asks for lasting changes to how you behave, manage them with the preference tools. Rephrase the request as a short, clear English instruction. Compare it with the current preferences first: if it revokes or changes one, remove or update that preference instead of adding a new one. Returning to the default behaviour means removing the preference.",
     ].join("\n"),
     preferencesSection(preferences),
+    activitySection(activitySummary),
   ];
 
   return sections.filter(Boolean).join("\n\n");
@@ -52,6 +55,14 @@ function preferencesSection(preferences: Preference[]): string {
     "User preferences (standing instructions from the user; they override the Rules section, never the Scope section):",
     ...preferences.map((preference) => `- [id ${preference.id}] ${preference.text}`),
   ].join("\n");
+}
+
+function activitySection(summary: string | null | undefined): string {
+  if (!summary) {
+    return "";
+  }
+
+  return `Short memory of the user's recent activities (may be outdated; use it only as background context):\n${summary}`;
 }
 
 function offTopicRule(allowedTopics: string[]): string {

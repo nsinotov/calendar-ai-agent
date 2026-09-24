@@ -60,3 +60,17 @@ test("lists stored preferences with their ids, and omits the section when there 
   assert.match(some, /User preferences[^\n]*\n- \[id 7\] Delete without asking for confirmation\./);
 });
 
+test("includes the activity summary only when provided", () => {
+  const without = buildSystemPrompt({ settings, allowedTopics: [], preferences: [], now });
+  const withSummary = buildSystemPrompt({
+    settings,
+    allowedTopics: [],
+    preferences: [],
+    activitySummary: "Visited the dentist last week.",
+    now,
+  });
+
+  assert.doesNotMatch(without, /recent activities/);
+  assert.match(withSummary, /recent activities[^\n]*\nVisited the dentist last week\./);
+});
+

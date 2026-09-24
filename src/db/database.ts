@@ -45,6 +45,13 @@ export const SCHEMA = `
   );
   CREATE INDEX IF NOT EXISTS idx_user_preferences_user ON user_preferences (telegram_user_id, id);
 
+  -- Short, continuously rewritten summary of the user's recent activities (one row per user).
+  CREATE TABLE IF NOT EXISTS user_activity (
+    telegram_user_id  INTEGER PRIMARY KEY REFERENCES users (telegram_user_id),
+    summary           TEXT    NOT NULL,
+    updated_at        INTEGER NOT NULL
+  );
+
   -- AES-256-GCM ciphertext of a provider's credential fields (e.g. a Google refresh token).
   CREATE TABLE IF NOT EXISTS user_secrets (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
