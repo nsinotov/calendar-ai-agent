@@ -26,6 +26,16 @@ export const SCHEMA = `
     updated_at        INTEGER NOT NULL
   );
 
+  -- "context" is a free-form label such as a place or topic ("market").
+  CREATE TABLE IF NOT EXISTS notes (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    telegram_user_id  INTEGER NOT NULL REFERENCES users (telegram_user_id),
+    text              TEXT    NOT NULL,
+    context           TEXT,
+    created_at        INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_notes_user ON notes (telegram_user_id, id);
+
   -- AES-256-GCM ciphertext of a provider's credential fields (e.g. a Google refresh token).
   CREATE TABLE IF NOT EXISTS user_secrets (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
