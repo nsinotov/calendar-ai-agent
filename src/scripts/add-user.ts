@@ -33,8 +33,6 @@ async function main(): Promise<void> {
   const language = await ask("Language (ISO code)", "uk");
   const timezone = await ask("Timezone (IANA name)", "Europe/Kyiv");
   const weekStart = (await ask("Week start (monday/sunday)", "monday")) === "sunday" ? "sunday" : "monday";
-  const llmProvider = (await ask("LLM provider (anthropic/openai)", env.LLM_PROVIDER)) as "anthropic" | "openai";
-  const llmModel = await ask("LLM model", env.LLM_MODEL);
 
   console.log("\nGoogle Calendar - run the OAuth flow separately to get a refresh token, then paste it here.");
   const refreshToken = await ask("Google refresh token");
@@ -49,10 +47,10 @@ async function main(): Promise<void> {
     language,
     timezone,
     weekStart,
-    llmProvider,
-    llmModel,
     calendarProvider: refreshToken ? "google" : null,
   });
+  // Answers given here are confirmed; anything left empty is still asked during onboarding.
+  settingsStore.markOnboardingSteps(userId, name ? ["name", "language", "timezone", "weekStart"] : ["language", "timezone", "weekStart"]);
   if (refreshToken) {
     secretsStore.set(userId, "calendar", "google", { refreshToken, calendarId: calendarId || "primary" });
   }

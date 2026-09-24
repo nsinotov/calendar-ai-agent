@@ -1,5 +1,9 @@
 import type { Preference } from "../memory/preferences-store.js";
-import type { UserSettings } from "../memory/user-settings-store.js";
+import {
+  remainingOnboardingSteps,
+  type OnboardingStep,
+  type UserSettings,
+} from "../memory/user-settings-store.js";
 
 export interface SystemPromptInput {
   settings: UserSettings;
@@ -39,11 +43,50 @@ export function buildSystemPrompt({ settings, allowedTopics, preferences, activi
       "- Keep replies short and chat-friendly.",
       "- When the user asks for lasting changes to how you behave, manage them with the preference tools. Rephrase the request as a short, clear English instruction. Compare it with the current preferences first: if it revokes or changes one, remove or update that preference instead of adding a new one. Returning to the default behaviour means removing the preference.",
     ].join("\n"),
+    onboardingSection(settings),
     preferencesSection(preferences),
     activitySection(activitySummary),
   ];
 
   return sections.filter(Boolean).join("\n\n");
+}
+
+const STEP_DESCRIPTIONS: Record<OnboardingStep, (settings: UserSettings) => string> = {
+  name: () => "the user's name (optional)",
+  language: (s) => `reply language (default: ${s.language})`,
+  timezone: (s) => `timezone (default: ${s.timezone})`,
+  weekStart: (s) => `first day of the week (default: ${s.weekStart})`,
+  contextRetention: (s) => `how many days the conversation history is kept (default: ${s.contextRetentionDays})`,
+  weeklyReminder: (s) => `weekly summary message (default: ${onOff(s.weeklyReminderEnabled)} at ${s.weeklyReminderTime})`,
+  dailyReminder: (s) => `daily summary message (default: ${onOff(s.dailyReminderEnabled)} at ${s.dailyReminderTime})`,
+  eventReminder: (s) =>
+    `reminder before each timed event (default: ${onOff(s.eventReminderEnabled)}, ${s.eventReminderMinutesBefore} minutes before)`,
+  oldEvents: (s) =>
+    `what to do with events that already ended (default: ${s.oldEventsAction}, after ${s.oldEventsRetentionDays} days)`,
+};
+
+function onboardingSection(settings: UserSettings): string {
+  const remaining = remainingOnboardingSteps(settings);
+  if (remaining.length === 0) {
+    return "";
+  }
+
+  return [
+    "Onboarding: these settings are not confirmed by the user yet, in this order:",
+    ...remaining.map((step) => `- ${step}: ${STEP_DESCRIPTIONS[step](settings)}`),
+    "Onboarding rules:",
+    "- If this is the very first message, greet the user warmly and introduce yourself briefly before the first question.",
+    "- Ask about one setting at a time, in the order above, and suggest answer options. Apply an answer with update_settings, or set_name for the name.",
+    "- If the user is happy with the default of a step, confirm it with accept_defaults for that step.",
+    "- If the user does not want to give their name, call set_name without a name (this completes the step) and continue with the next question.",
+    "- If the user asks something else instead of answering, answer it fully first, then return to the current onboarding question.",
+    "- If the user wants to skip or stop the onboarding, list the remaining settings with their default values and ask whether they agree. Call accept_defaults without steps only after they agree; if they want to change some, ask about those.",
+    "- The user can change any setting later just by asking.",
+  ].join("\n");
+}
+
+function onOff(enabled: boolean): string {
+  return enabled ? "on" : "off";
 }
 
 function preferencesSection(preferences: Preference[]): string {

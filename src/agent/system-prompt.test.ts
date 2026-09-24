@@ -5,6 +5,17 @@ import { buildSystemPrompt } from "./system-prompt.js";
 
 const settings = {
   name: null,
+  onboarding: {
+    name: true,
+    language: true,
+    timezone: true,
+    weekStart: true,
+    contextRetention: true,
+    weeklyReminder: true,
+    dailyReminder: true,
+    eventReminder: true,
+    oldEvents: true,
+  },
   language: "uk",
   timezone: "Europe/Kyiv",
   weekStart: "monday",
@@ -72,5 +83,18 @@ test("includes the activity summary only when provided", () => {
 
   assert.doesNotMatch(without, /recent activities/);
   assert.match(withSummary, /recent activities[^\n]*\nVisited the dentist last week\./);
+});
+
+test("lists the unconfirmed onboarding steps with defaults, and drops the section when all are confirmed", () => {
+  const partial = { ...settings, onboarding: { ...settings.onboarding, name: false, timezone: false } };
+  const during = buildSystemPrompt({ settings: partial, allowedTopics: [], preferences: [], now });
+  const done = buildSystemPrompt({ settings, allowedTopics: [], preferences: [], now });
+
+  assert.match(during, /Onboarding/);
+  assert.match(during, /- name: /);
+  assert.match(during, /- timezone: timezone \(default: Europe\/Kyiv\)/);
+  assert.doesNotMatch(during, /- language: /);
+  assert.match(during, /accept_defaults/);
+  assert.doesNotMatch(done, /Onboarding/);
 });
 
