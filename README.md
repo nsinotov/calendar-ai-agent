@@ -15,7 +15,7 @@ A Telegram assistant that manages Google Calendar and a personal notes list thro
 - Weekly and daily summaries of upcoming events, plus a reminder before each event (all configurable)
 - Optional cleanup of old calendar events
 - Conversation history with configurable retention; `/clear` resets it
-- Shared LLM credit tracking: admins are warned when the balance runs low; when the LLM runs out of credits, all users get one notice and a short status reply to any message until it recovers
+- Shared LLM credit tracking: admins are warned when the balance runs low and can check or update the tracked balance with `/balance` and `/setbalance <usd>`; when the LLM runs out of credits, all users get one notice and a short status reply to any message until it recovers
 - Admin role: admins are regular users who also receive low-balance warnings and system errors in Telegram. Users and secrets are managed only through the server CLI, not through chat
 - Provider-agnostic LLM layer: Anthropic and OpenAI implemented behind one interface
 - Provider-agnostic calendar layer: Google Calendar implemented behind the same pattern
@@ -34,7 +34,9 @@ Tool-use agent: the LLM decides which calendar, notes, preferences and settings 
 
 ```text
 src/
+  app/         message handling, access control, per-user agent context
   agent/       agent loop, system prompt, tool definitions, onboarding, suggestions
+  billing/     LLM spend tracking, balance warnings, out-of-credits handling
   llm/         LLM provider interface + Anthropic and OpenAI implementations
   calendar/    calendar provider interface + Google implementation
   messaging/   messaging provider interface + Telegram implementation
@@ -42,7 +44,7 @@ src/
   memory/      conversation history, per-user settings, preferences, activity memory
   db/          SQLite connection and schema
   secrets/     encryption and per-user credential storage
-  scripts/     admin CLI (`pnpm add-user`)
+  scripts/     admin CLI (`pnpm add-user`, `pnpm set-balance`)
   logging/     logger + console/file log providers
   scheduler/   summaries, event reminders, cleanup jobs
   config/      environment config
@@ -85,6 +87,7 @@ Set `TELEGRAM_WEBHOOK_URL` to a public HTTPS URL that proxies to the container's
 - `pnpm build`: build for production
 - `pnpm start`: run the production build
 - `pnpm add-user`: register a user with a role and their credentials (run on the server)
+- `pnpm set-balance <usd>`: set the tracked LLM balance after a top-up (run on the server)
 - `pnpm typecheck`: type-check the project
 - `pnpm test`: run unit tests
 

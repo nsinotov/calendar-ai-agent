@@ -1,5 +1,8 @@
 import { join } from "node:path";
 import { Agent } from "./agent/index.js";
+import { BillingLlmProvider } from "./billing/billing-llm-provider.js";
+import { BillingService } from "./billing/billing-service.js";
+import { createMessagingNotifier } from "./billing/notifier.js";
 import { AccessControl } from "./app/access-control.js";
 import { createAgentContextBuilder } from "./app/agent-context.js";
 import { createMessageHandler } from "./app/message-handler.js";
@@ -9,6 +12,8 @@ import { createStorage } from "./db/index.js";
 import { createLlmProvider } from "./llm/index.js";
 import { createLogger } from "./logging/index.js";
 import { createMessagingProvider } from "./messaging/index.js";
+
+const OUTAGE_PROBE_INTERVAL_MS = 5 * 60 * 1000;
 
 const logger = createLogger({
   providers: env.LOG_PROVIDERS,
@@ -24,17 +29,6 @@ const storage = createStorage({
   encryptionKeyHex: env.SECRETS_ENCRYPTION_KEY,
 });
 
-const llm = createLlmProvider(
-  {
-    provider: env.LLM_PROVIDER,
-    apiKey: env.LLM_API_KEY,
-    model: env.LLM_MODEL,
-    maxTokens: env.LLM_MAX_TOKENS,
-    effort: env.LLM_EFFORT,
-  },
-  logger,
-);
-
 const messaging = createMessagingProvider(
   {
     provider: env.MESSAGING_PROVIDER,
@@ -45,6 +39,37 @@ const messaging = createMessagingProvider(
         : undefined,
   },
   logger,
+);
+
+if (env.LLM_BUDGET_USD !== undefined && storage.billing.get().balanceUsd === null) {
+  storage.billing.setBalance(env.LLM_BUDGET_USD);
+}
+
+const billing = new BillingService(
+  storage.billing,
+  createMessagingNotifier(messaging, storage.users, logger),
+  {
+    prices:
+      env.LLM_BUDGET_USD !== undefined && env.LLM_INPUT_PRICE_PER_MTOK !== undefined && env.LLM_OUTPUT_PRICE_PER_MTOK !== undefined
+        ? { inputPerMtok: env.LLM_INPUT_PRICE_PER_MTOK, outputPerMtok: env.LLM_OUTPUT_PRICE_PER_MTOK }
+        : null,
+    lowBalanceUsd: env.LLM_LOW_BALANCE_USD,
+    probeIntervalMs: OUTAGE_PROBE_INTERVAL_MS,
+  },
+);
+
+const llm = new BillingLlmProvider(
+  createLlmProvider(
+  {
+    provider: env.LLM_PROVIDER,
+    apiKey: env.LLM_API_KEY,
+    model: env.LLM_MODEL,
+    maxTokens: env.LLM_MAX_TOKENS,
+    effort: env.LLM_EFFORT,
+  },
+  logger,
+  ),
+  billing,
 );
 
 const resolveCalendar = createCalendarResolver({
@@ -64,6 +89,8 @@ messaging.onMessage(
     access: new AccessControl(storage.users),
     conversations: storage.conversations,
     agent: new Agent(llm, storage.conversations, env.LLM_MAX_TOOL_ITERATIONS),
+    users: storage.users,
+    billing,
     llm,
     languageOf: (userId) => storage.settings.get(userId).language,
     buildContext: createAgentContextBuilder({

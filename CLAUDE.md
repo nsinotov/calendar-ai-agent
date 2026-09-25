@@ -41,6 +41,8 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 
 ```text
 src/
+  app/           — message handling, access control, per-user agent context
+  billing/       — LLM spend tracking, balance warnings, out-of-credits handling
   agent/         — core agent logic, tool definitions, conversation loop, system prompt, onboarding, suggestions
   llm/           — LLM provider interface + Anthropic and OpenAI implementations
   logging/       — logger + console/file log providers
@@ -50,7 +52,7 @@ src/
   memory/        — conversation history, per-user settings, preferences, activity memory
   db/            — SQLite connection and schema
   secrets/       — encryption and per-user credential storage
-  scripts/       — admin CLI (`pnpm add-user`)
+  scripts/       — admin CLI (`pnpm add-user`, `pnpm set-balance`)
   scheduler/     — summaries, event reminders, old-events cleanup
   config/        — environment config
   index.ts       — entry point
@@ -62,6 +64,7 @@ src/
 - `pnpm test` — run unit tests (`node:test`)
 - `pnpm typecheck` — type-check the project
 - `pnpm add-user` — register a user with a role and their credentials (run on the server)
+- `pnpm set-balance <usd>` — set the tracked LLM balance after a top-up (run on the server)
 - `pnpm build` — build for production
 - `pnpm start` — run production build
 

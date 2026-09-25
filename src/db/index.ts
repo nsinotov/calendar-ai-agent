@@ -1,3 +1,5 @@
+import type { BillingStore } from "../billing/billing-store.js";
+import { SqliteBillingStore } from "../billing/billing-store.js";
 import type { ActivityMemoryStore } from "../memory/activity-memory-store.js";
 import { SqliteActivityMemoryStore } from "../memory/activity-memory-store.js";
 import type { ConversationStore } from "../memory/conversation-store.js";
@@ -30,6 +32,7 @@ export interface Storage {
   activity: ActivityMemoryStore;
   secrets: UserSecretsStore;
   notes: NotesProvider;
+  billing: BillingStore;
   close(): void;
 }
 
@@ -46,6 +49,7 @@ export function createStorage(config: StorageConfig): Storage {
         activity: new SqliteActivityMemoryStore(db),
         secrets: new SqliteUserSecretsStore(db, loadEncryptionKey(config.encryptionKeyHex)),
         notes: createNotesProvider(db),
+        billing: new SqliteBillingStore(db),
         close: () => db.close(),
       };
     }

@@ -53,6 +53,15 @@ export const SCHEMA = `
     updated_at        INTEGER NOT NULL
   );
 
+  -- Single row: tracked LLM balance (NULL = not tracked) and the notification state flags.
+  CREATE TABLE IF NOT EXISTS llm_billing (
+    id            INTEGER PRIMARY KEY CHECK (id = 1),
+    balance_usd   REAL,
+    low_notified  INTEGER NOT NULL DEFAULT 0,
+    outage        INTEGER NOT NULL DEFAULT 0,
+    updated_at    INTEGER NOT NULL
+  );
+
   -- AES-256-GCM ciphertext of a provider's credential fields (e.g. a Google refresh token).
   CREATE TABLE IF NOT EXISTS user_secrets (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
