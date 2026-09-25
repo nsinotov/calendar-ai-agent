@@ -4,6 +4,7 @@ import { CompositeLogger } from "./logger.js";
 import type { LogProvider } from "./types.js";
 
 export type { Logger, LogLevel, LogEntry, LogProvider } from "./types.js";
+export { AlertLogProvider } from "./alert-provider.js";
 
 export interface LoggingConfig {
   providers: string[];
@@ -12,6 +13,8 @@ export interface LoggingConfig {
   // Exact directory the file provider writes into (caller resolves any default).
   dir: string;
   retentionDays: number;
+  // Providers built by the caller, e.g. ones that need components created after the logger.
+  extraProviders?: LogProvider[];
 }
 
 export function createLogger(config: LoggingConfig): CompositeLogger {
@@ -27,7 +30,7 @@ export function createLogger(config: LoggingConfig): CompositeLogger {
   });
 
   return new CompositeLogger({
-    providers,
+    providers: [...providers, ...(config.extraProviders ?? [])],
     levels: new Set(config.levels),
     debugEnabled: config.debugEnabled,
   });

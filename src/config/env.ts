@@ -91,6 +91,8 @@ const envSchema = z.object({
   DEBUG_ENABLED: boolFromEnv(false),
   LOG_LEVELS: csvEnum(["error", "warn", "info"], "error,warn,info"),
   LOG_PROVIDERS: csvList("console"),
+  // Message admins in Telegram about error-level events (event name and kind only, deduplicated)
+  ADMIN_ERROR_ALERTS: boolFromEnv(true),
   LOG_RETENTION_DAYS: z.coerce.number().int().positive().default(14),
   // Where the file provider writes logs. Defaults to DATA_DIR/logs.
   LOG_DIR: z.string().min(1).optional(),

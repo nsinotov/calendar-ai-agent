@@ -11,17 +11,19 @@ import { createCalendarResolver } from "./app/user-calendar.js";
 import { env } from "./config/env.js";
 import { createStorage } from "./db/index.js";
 import { createLlmProvider } from "./llm/index.js";
-import { createLogger } from "./logging/index.js";
+import { AlertLogProvider, createLogger } from "./logging/index.js";
 import { createMessagingProvider } from "./messaging/index.js";
 
 const OUTAGE_PROBE_INTERVAL_MS = 5 * 60 * 1000;
 
+const adminAlerts = new AlertLogProvider();
 const logger = createLogger({
   providers: env.LOG_PROVIDERS,
   levels: env.LOG_LEVELS,
   debugEnabled: env.DEBUG_ENABLED,
   dir: env.LOG_DIR ?? join(env.DATA_DIR, "logs"),
   retentionDays: env.LOG_RETENTION_DAYS,
+  extraProviders: env.ADMIN_ERROR_ALERTS ? [adminAlerts] : [],
 });
 
 const storage = createStorage({
@@ -46,9 +48,12 @@ if (env.LLM_BUDGET_USD !== undefined && storage.billing.get().balanceUsd === nul
   storage.billing.setBalance(env.LLM_BUDGET_USD);
 }
 
+const notifier = createMessagingNotifier(messaging, storage.users, logger);
+adminAlerts.connect((text) => notifier.notifyAdmins(text));
+
 const billing = new BillingService(
   storage.billing,
-  createMessagingNotifier(messaging, storage.users, logger),
+  notifier,
   {
     prices:
       env.LLM_BUDGET_USD !== undefined && env.LLM_INPUT_PRICE_PER_MTOK !== undefined && env.LLM_OUTPUT_PRICE_PER_MTOK !== undefined
