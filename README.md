@@ -49,6 +49,10 @@ src/
   index.ts     entry point
 ```
 
+## Extending
+
+LLM, calendar, messaging, notes, logging and storage all sit behind interfaces with a factory in each module's `index.ts`. New providers (another LLM, calendar, messenger or database) plug in there without touching the agent.
+
 ## Setup
 
 1. Create a Telegram bot with [@BotFather](https://t.me/BotFather).
