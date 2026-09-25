@@ -7,7 +7,7 @@ const boolFromEnv = (fallback: boolean) =>
     .transform((value) => value === "true");
 
 // Comma-separated list, e.g. "error,warn,info" -> ["error", "warn", "info"].
-const csvEnum = <T extends [string, ...string[]]>(values: T, fallback: string) =>
+const csvEnum = <const T extends [string, ...string[]]>(values: T, fallback: string) =>
   z
     .string()
     .default(fallback)
