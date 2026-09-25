@@ -46,3 +46,9 @@ export function formatEventReminder(event: CalendarEvent, minutesLeft: number, t
   return `Reminder: "${event.title}" starts at ${start} (in ${minutesLeft} min).${event.location ? ` Place: ${event.location}.` : ""}`;
 }
 
+
+export function formatLateEventReminder(event: CalendarEvent, minutesLeft: number, timezone: string): string {
+  const start = localParts(new Date(event.start.value), timezone).time;
+
+  return `I apologize for the delay, there was an issue on my side. But you have "${event.title}" starting at ${start} (in ${minutesLeft} min).${event.location ? ` Place: ${event.location}.` : ""}`;
+}

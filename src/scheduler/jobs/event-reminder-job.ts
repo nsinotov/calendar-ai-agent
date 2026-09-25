@@ -3,7 +3,7 @@ import type { LlmProvider } from "../../llm/types.js";
 import { translate } from "../../llm/translate.js";
 import type { EventReminderStore } from "../../memory/event-reminder-store.js";
 import type { SentStore } from "../../memory/sent-store.js";
-import { formatEventReminder } from "../format.js";
+import { formatEventReminder, formatLateEventReminder } from "../format.js";
 import type { Job, SendMessage } from "../types.js";
 
 const MINUTE_MS = 60 * 1000;
@@ -20,11 +20,13 @@ export interface EventReminderJobDeps {
 }
 
 // Events come from a per-user cache refreshed every `pollMinutes`, so an event deleted
-// or moved in between can still trigger one reminder.
+// or moved in between can still trigger one reminder. A reminder that was missed (downtime, an error)
+// is still sent until the event starts, with an apology. Events first seen after their reminder
+// time (just created) get none: nothing was missed.
 export function createEventReminderJob(deps: EventReminderJobDeps): Job {
   const cache = new Map<number, { fetchedAt: number; events: CalendarEvent[] }>();
   const pollMs = deps.pollMinutes * MINUTE_MS;
-  // A reminder missed by more than this (poll gap, downtime) is skipped instead of sent late.
+  // A reminder sent later than this after its time counts as late and carries an apology.
   const graceMs = pollMs + deps.tickMs;
 
   return {
@@ -39,6 +41,11 @@ export function createEventReminderJob(deps: EventReminderJobDeps): Job {
         });
         cached = { fetchedAt: nowMs, events: events.filter((event) => !event.start.allDay && event.status !== "cancelled") };
         cache.set(userId, cached);
+        for (const event of cached.events) {
+          if (deps.sent.sentAt(userId, seenKey(event)) === null) {
+            deps.sent.mark(userId, seenKey(event), nowMs);
+          }
+        }
       }
 
       for (const event of cached.events) {
@@ -50,11 +57,14 @@ export function createEventReminderJob(deps: EventReminderJobDeps): Job {
 
         const remindAt = startMs - lead * MINUTE_MS;
         const key = `event:${event.id}:${event.start.value}`;
-        if (nowMs < remindAt || nowMs > remindAt + graceMs || deps.sent.has(userId, key)) {
+        const seenAt = deps.sent.sentAt(userId, seenKey(event));
+        if (nowMs < remindAt || (seenAt !== null && seenAt >= remindAt) || deps.sent.has(userId, key)) {
           continue;
         }
 
-        const draft = formatEventReminder(event, Math.round((startMs - nowMs) / MINUTE_MS), settings.timezone);
+        const late = nowMs > remindAt + graceMs;
+        const format = late ? formatLateEventReminder : formatEventReminder;
+        const draft = format(event, Math.round((startMs - nowMs) / MINUTE_MS), settings.timezone);
         await deps.send(userId, await translate(deps.llm, settings.language, draft));
         deps.sent.mark(userId, key);
       }
@@ -62,3 +72,7 @@ export function createEventReminderJob(deps: EventReminderJobDeps): Job {
   };
 }
 
+
+function seenKey(event: CalendarEvent): string {
+  return `seen:${event.id}:${event.start.value}`;
+}

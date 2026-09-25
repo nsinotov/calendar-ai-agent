@@ -41,3 +41,14 @@ test("pruneOlderThan() drops only old marks", () => {
   assert.equal(store.has(1, "new"), true);
 });
 
+
+test("sentAt() returns the first mark time, or null", () => {
+  const { db, store } = testStore();
+  assert.equal(store.sentAt(1, "k"), null);
+
+  store.mark(1, "k");
+  db.prepare("UPDATE sent_notifications SET sent_at = 500 WHERE key = 'k'").run();
+  store.mark(1, "k");
+
+  assert.equal(store.sentAt(1, "k"), 500);
+});

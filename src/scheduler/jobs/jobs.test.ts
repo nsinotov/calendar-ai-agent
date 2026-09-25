@@ -171,13 +171,40 @@ test("a custom reminder overrides the default lead time and works with default r
   deps.reminders.set(1, "e1", 120);
   const job = reminderJob(deps);
 
+  await job.run(context(calendar, settings, "2026-09-25T07:30:00Z"));
   await job.run(context(calendar, settings, "2026-09-25T08:00:00Z"));
 
   assert.equal(deps.messages.length, 1);
   assert.match(deps.messages[0]![1], /Dentist/);
 });
 
-test("a reminder whose time already passed long ago is not sent late", async () => {
+test("a missed reminder is still sent before the event starts, with an apology", async () => {
+  const deps = setup();
+  const settings = english(deps.settingsStore.get(1));
+  const calendar = fakeCalendar([timed("e1", "Dentist", "2026-09-25T10:00:00Z")]);
+  const job = reminderJob(deps);
+
+  await job.run(context(calendar, settings, "2026-09-25T08:30:00Z")); // event seen before its reminder time
+  await job.run(context(calendar, settings, "2026-09-25T09:59:00Z")); // reminder time (09:00) long missed
+
+  assert.equal(deps.messages.length, 1);
+  assert.match(deps.messages[0]![1], /apologize for the delay/);
+  assert.match(deps.messages[0]![1], /in 1 min/);
+});
+
+test("no reminder is sent once the event has started", async () => {
+  const deps = setup();
+  const settings = english(deps.settingsStore.get(1));
+  const calendar = fakeCalendar([timed("e1", "Dentist", "2026-09-25T10:00:00Z")]);
+  const job = reminderJob(deps);
+
+  await job.run(context(calendar, settings, "2026-09-25T08:30:00Z"));
+  await job.run(context(calendar, settings, "2026-09-25T10:01:00Z"));
+
+  assert.equal(deps.messages.length, 0);
+});
+
+test("an event first seen after its reminder time gets no reminder", async () => {
   const deps = setup();
   const calendar = fakeCalendar([timed("e1", "Dentist", "2026-09-25T10:00:00Z")]);
 
