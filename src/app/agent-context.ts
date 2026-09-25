@@ -12,9 +12,11 @@ import {
 import type { CalendarProvider } from "../calendar/index.js";
 import type { Storage } from "../db/index.js";
 import type { LlmProvider } from "../llm/types.js";
+import { canUse, type Command } from "./commands.js";
 
 export interface AgentContextDeps {
-  storage: Pick<Storage, "settings" | "preferences" | "notes" | "activity" | "secrets">;
+  storage: Pick<Storage, "users" | "settings" | "preferences" | "notes" | "activity" | "secrets">;
+  commands: Command[];
   llm: LlmProvider;
   resolveCalendar: (userId: number) => CalendarProvider | null;
   allowedTopics: string[];
@@ -55,6 +57,9 @@ export function createAgentContextBuilder(deps: AgentContextDeps): (userId: numb
       );
     }
 
+    const role = storage.users.get(userId)?.role ?? "user";
+    const availableCommands = deps.commands.filter((command) => canUse(role, command));
+
     return {
       system: buildSystemPrompt({
         settings,
@@ -63,7 +68,7 @@ export function createAgentContextBuilder(deps: AgentContextDeps): (userId: numb
         activitySummary: deps.suggestionsEnabled ? storage.activity.get(userId) : undefined,
         now: now(),
       }),
-      tools: [...tools, createCapabilitiesTool(tools)],
+      tools: [...tools, createCapabilitiesTool(tools, availableCommands)],
       retentionDays: settings.contextRetentionDays,
     };
   };

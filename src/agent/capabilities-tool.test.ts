@@ -16,6 +16,7 @@ test("get_capabilities lists the name and description of every given tool", asyn
       { name: "first", description: "Does the first thing." },
       { name: "second", description: "Does the second thing." },
     ],
+    commands: [],
   });
 });
 
@@ -25,3 +26,10 @@ test("get_capabilities reflects the tool list it was given, so a disabled tool i
   assert.deepEqual(result.capabilities.map((tool) => tool.name), ["first"]);
 });
 
+
+test("get_capabilities lists the chat commands it was given", async () => {
+  const commands = [{ usage: "/clear", description: "Clear the history." }];
+  const result = JSON.parse(await createCapabilitiesTool([first], commands).execute({})) as { commands: unknown };
+
+  assert.deepEqual(result.commands, commands);
+});

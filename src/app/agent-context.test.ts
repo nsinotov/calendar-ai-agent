@@ -20,6 +20,7 @@ function build(options: { calendar: CalendarProvider | null; suggestionsEnabled:
     const context = createAgentContextBuilder({
       storage,
       llm,
+      commands: [],
       resolveCalendar: () => options.calendar,
       allowedTopics: [],
       suggestionsEnabled: options.suggestionsEnabled,
@@ -49,3 +50,37 @@ test("get_suggestions is registered only when the flag is on", () => {
   assert.ok(build({ calendar, suggestionsEnabled: true }).includes("get_suggestions"));
 });
 
+
+test("get_capabilities lists only the commands the user's role may use", async () => {
+  const dataDir = mkdtempSync(join(tmpdir(), "context-"));
+  const storage = createStorage({ provider: "sqlite", dataDir, encryptionKeyHex: "0".repeat(64) });
+  const commands = [
+    { name: "clear", usage: "/clear", description: "Clear.", role: "user" as const, run: async () => "" },
+    { name: "balance", usage: "/balance", description: "Balance.", role: "admin" as const, run: async () => "" },
+  ];
+
+  try {
+    storage.users.upsert(1, "user");
+    storage.users.upsert(2, "admin");
+    const builder = createAgentContextBuilder({
+      storage,
+      llm,
+      commands,
+      resolveCalendar: () => null,
+      allowedTopics: [],
+      suggestionsEnabled: false,
+    });
+    const usages = async (userId: number) => {
+      const tool = builder(userId).tools.find((candidate) => candidate.definition.name === "get_capabilities")!;
+      const result = JSON.parse(await tool.execute({})) as { commands: { usage: string }[] };
+
+      return result.commands.map((command) => command.usage);
+    };
+
+    assert.deepEqual(await usages(1), ["/clear"]);
+    assert.deepEqual(await usages(2), ["/clear", "/balance"]);
+  } finally {
+    storage.close();
+    rmSync(dataDir, { recursive: true, force: true });
+  }
+});

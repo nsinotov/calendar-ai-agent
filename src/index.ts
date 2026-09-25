@@ -6,6 +6,7 @@ import { createMessagingNotifier } from "./billing/notifier.js";
 import { AccessControl } from "./app/access-control.js";
 import { createAgentContextBuilder } from "./app/agent-context.js";
 import { createMessageHandler } from "./app/message-handler.js";
+import { createCommands } from "./app/commands.js";
 import { createCalendarResolver } from "./app/user-calendar.js";
 import { env } from "./config/env.js";
 import { createStorage } from "./db/index.js";
@@ -83,19 +84,25 @@ const resolveCalendar = createCalendarResolver({
   logger,
 });
 
+const commands = createCommands({
+  conversations: storage.conversations,
+  billing,
+  llm,
+  languageOf: (userId) => storage.settings.get(userId).language,
+});
+
 messaging.onMessage(
   createMessageHandler({
     messaging,
     access: new AccessControl(storage.users),
-    conversations: storage.conversations,
     agent: new Agent(llm, storage.conversations, env.LLM_MAX_TOOL_ITERATIONS),
     users: storage.users,
     billing,
-    llm,
-    languageOf: (userId) => storage.settings.get(userId).language,
+    commands,
     buildContext: createAgentContextBuilder({
       storage,
       llm,
+      commands,
       resolveCalendar,
       allowedTopics: env.ALLOWED_TOPICS,
       suggestionsEnabled: env.SUGGESTIONS_ENABLED,

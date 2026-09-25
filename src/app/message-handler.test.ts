@@ -11,6 +11,7 @@ import { SqliteConversationStore } from "../memory/conversation-store.js";
 import { SqliteUserStore } from "../memory/user-store.js";
 import type { MessagingProvider } from "../messaging/index.js";
 import { AccessControl } from "./access-control.js";
+import { createCommands } from "./commands.js";
 import { createMessageHandler } from "./message-handler.js";
 
 function setup(llm: LlmProvider) {
@@ -38,12 +39,10 @@ function setup(llm: LlmProvider) {
   const handler = createMessageHandler({
     messaging,
     access: new AccessControl(users),
-    conversations,
     users,
     billing,
+    commands: createCommands({ conversations, billing, llm, languageOf: () => "uk" }),
     agent: new Agent(llm, conversations),
-    llm,
-    languageOf: () => "uk",
     buildContext: () => ({ system: "s", tools: [], retentionDays: 7 }),
   });
 

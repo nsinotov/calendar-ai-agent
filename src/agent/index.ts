@@ -1,5 +1,5 @@
 export { Agent, type AgentContext } from "./agent.js";
-export { createCapabilitiesTool } from "./capabilities-tool.js";
+export { createCapabilitiesTool, type CommandInfo } from "./capabilities-tool.js";
 export { createCalendarTools } from "./calendar-tools.js";
 export { createPreferencesTools } from "./preferences-tools.js";
 export { joinText, refreshActivitySummary } from "./activity.js";
