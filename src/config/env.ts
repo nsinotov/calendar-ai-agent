@@ -97,6 +97,13 @@ export const env = envSchema
         message: "Required when LLM_PROVIDER=openai",
       });
     }
+    if (value.TELEGRAM_WEBHOOK_URL && !value.TELEGRAM_WEBHOOK_SECRET) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["TELEGRAM_WEBHOOK_SECRET"],
+        message: "Required when TELEGRAM_WEBHOOK_URL is set",
+      });
+    }
     if (
       value.LLM_BUDGET_USD !== undefined &&
       (value.LLM_INPUT_PRICE_PER_MTOK === undefined ||
