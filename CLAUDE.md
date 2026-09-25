@@ -17,7 +17,7 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 
 - Calendar management by natural language (Google Calendar), including bulk removal of old events
 - Multi-user (shared bot, per-user settings and encrypted calendar credentials in SQLite), configurable conversation language (default Ukrainian)
-- Reminders: weekly summary, daily summary, and a configurable lead-time reminder before each timed event
+- Reminders: weekly summary, daily summary (a "nothing planned" message on empty days), and a configurable lead-time reminder before each timed event, with an optional per-event lead time; a missed reminder is sent late with an apology until the event starts
 - Configurable first day of the week and old-events handling (keep/delete)
 - Conversation history kept for N days (configurable), `/clear` resets it
 - Notes/reminders by context ("buy in market"); agent recalls them on request and removes done items, or clears all
@@ -28,14 +28,14 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 - Access control: unregistered Telegram IDs rejected without the LLM (static reply), repeat senders ignored
 - Experimental (env flag `SUGGESTIONS_ENABLED`, off by default): short rewritten activity memory from events and notes, LLM follow-up suggestions on request and in summaries; handles sensitive data
 - Shared LLM balance: low-balance warning goes to admins only; when the LLM reports no credits, all users get one broadcast and a static status reply (no LLM) to each message until it recovers
-- Roles: `admin` | `user`; admins are normal users who also get low-balance warnings and system errors in Telegram. No chat-based admin tools: adding users and editing secrets is CLI-only
+- Roles: `admin` | `user`; admins are normal users who also get low-balance warnings and system-error alerts in Telegram, and can use `/balance` and `/setbalance <usd>` (chat commands defined in one command registry, shared with the capabilities tool). Adding users and editing secrets is CLI-only
 - Docker deployment
 
 ## Architecture
 
 - **Tool-use agent pattern:** LLM decides which calendar, notes, preferences and settings tools to call
-- **Provider pattern:** Calendar and messaging behind interfaces for extensibility
-- **Modules:** agent logic / LLM interaction / calendar provider / messaging provider
+- **Provider pattern:** LLM, calendar, messaging, storage and logging sit behind interfaces with a factory each; the provider is an identifier (env or per-user setting)
+- **Modules:** app (message handling) / agent / LLM / calendar / messaging / storage stores / billing / scheduler
 
 ## Project Structure
 
@@ -45,12 +45,12 @@ src/
   billing/       — LLM spend tracking, balance warnings, out-of-credits handling
   agent/         — core agent logic, tool definitions, conversation loop, system prompt, onboarding, suggestions
   llm/           — LLM provider interface + Anthropic and OpenAI implementations
-  logging/       — logger + console/file log providers
+  logging/       — logger, console/file log providers, admin error alerts
   calendar/      — calendar provider interface + Google implementation
   messaging/     — messaging provider interface + implementations
   notes/         — notes provider interface + SQLite implementation
-  memory/        — conversation history, per-user settings, preferences, activity memory
-  db/            — SQLite connection and schema
+  memory/        — conversation history, per-user settings, preferences, activity memory, event reminders, sent-message marks
+  db/            — SQLite connection, schema and the storage factory
   secrets/       — encryption and per-user credential storage
   scripts/       — admin CLI (`pnpm add-user`, `pnpm set-balance`)
   scheduler/     — summaries, event reminders, old-events cleanup
@@ -76,6 +76,6 @@ src/
 - No obvious comments; add one only when the meaning isn't readable from the code or is implicit
 - Strict TypeScript, no `any`
 - ESM modules
-- Interfaces for provider abstractions
+- Interfaces for provider abstractions; factories take `provider: string`, switch on it with a `default` that throws, and provider names appear nowhere outside their factory
 - Zod for runtime validation
 
