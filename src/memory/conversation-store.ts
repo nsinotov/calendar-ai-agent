@@ -3,7 +3,8 @@ import type { Message } from "../llm/types.js";
 
 export interface ConversationStore {
   append(userId: number, message: Message): void;
-  load(userId: number): Message[];
+  // Messages older than `retentionDays` are dropped.
+  load(userId: number, retentionDays: number): Message[];
   clear(userId: number): void;
 }
 
@@ -15,10 +16,7 @@ interface MessageRow {
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export class SqliteConversationStore implements ConversationStore {
-  constructor(
-    private readonly db: DatabaseSync,
-    private readonly retentionDays: number,
-  ) {}
+  constructor(private readonly db: DatabaseSync) {}
 
   append(userId: number, message: Message): void {
     this.db
@@ -26,8 +24,8 @@ export class SqliteConversationStore implements ConversationStore {
       .run(userId, message.role, JSON.stringify(message.content), Date.now());
   }
 
-  load(userId: number): Message[] {
-    this.purgeExpired(userId);
+  load(userId: number, retentionDays: number): Message[] {
+    this.purgeExpired(userId, retentionDays);
     const rows = this.db
       .prepare("SELECT role, content FROM messages WHERE telegram_user_id = ? ORDER BY id")
       .all(userId) as unknown as MessageRow[];
@@ -47,8 +45,8 @@ export class SqliteConversationStore implements ConversationStore {
     this.db.prepare("DELETE FROM messages WHERE telegram_user_id = ?").run(userId);
   }
 
-  private purgeExpired(userId: number): void {
-    const cutoff = Date.now() - this.retentionDays * DAY_MS;
+  private purgeExpired(userId: number, retentionDays: number): void {
+    const cutoff = Date.now() - retentionDays * DAY_MS;
     this.db
       .prepare("DELETE FROM messages WHERE telegram_user_id = ? AND created_at < ?")
       .run(userId, cutoff);

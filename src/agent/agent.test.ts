@@ -30,7 +30,7 @@ function testConversations(): SqliteConversationStore {
   db.exec(SCHEMA);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0)").run();
 
-  return new SqliteConversationStore(db, 7);
+  return new SqliteConversationStore(db);
 }
 
 const echoTool: Tool = defineTool(
@@ -47,7 +47,7 @@ test("reply() returns the text when the model answers without tools", async () =
   const { llm } = scriptedLlm([{ content: [{ type: "text", text: "Hello" }], stopReason: "end_turn", usage }]);
   const agent = new Agent(llm, testConversations());
 
-  assert.equal(await agent.reply(1, "hi", { system: "s", tools: [] }), "Hello");
+  assert.equal(await agent.reply(1, "hi", { system: "s", tools: [], retentionDays: 7 }), "Hello");
 });
 
 test("reply() runs requested tools, feeds results back and returns the final text", async () => {
@@ -62,12 +62,12 @@ test("reply() runs requested tools, feeds results back and returns the final tex
   ]);
   const agent = new Agent(llm, conversations);
 
-  assert.equal(await agent.reply(1, "go", { system: "s", tools: [echoTool] }), "Done");
+  assert.equal(await agent.reply(1, "go", { system: "s", tools: [echoTool], retentionDays: 7 }), "Done");
   assert.deepEqual(requests[1]?.messages.at(-1), {
     role: "user",
     content: [{ type: "tool_result", callId: "c1", content: '{"echoed":"x"}' }],
   });
-  assert.equal(conversations.load(1).length, 4);
+  assert.equal(conversations.load(1, 7).length, 4);
 });
 
 test("tool failures and unknown tools become error results instead of throwing", async () => {
@@ -84,7 +84,7 @@ test("tool failures and unknown tools become error results instead of throwing",
   ]);
   const agent = new Agent(llm, testConversations());
 
-  await agent.reply(1, "go", { system: "s", tools: [echoTool] });
+  await agent.reply(1, "go", { system: "s", tools: [echoTool], retentionDays: 7 });
   const results = requests[1]?.messages.at(-1)?.content;
 
   assert.ok(Array.isArray(results));
@@ -103,6 +103,6 @@ test("reply() gives up after the step limit", async () => {
   const { llm } = scriptedLlm([loop, loop]);
   const agent = new Agent(llm, testConversations(), 2);
 
-  await assert.rejects(agent.reply(1, "go", { system: "s", tools: [echoTool] }), /did not finish/);
+  await assert.rejects(agent.reply(1, "go", { system: "s", tools: [echoTool], retentionDays: 7 }), /did not finish/);
 });
 

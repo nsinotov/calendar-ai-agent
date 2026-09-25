@@ -11,7 +11,6 @@ test("createStorage() returns stores that share one database", () => {
     provider: "sqlite",
     dataDir,
     encryptionKeyHex: "0".repeat(64),
-    conversationRetentionDays: 7,
   });
 
   try {

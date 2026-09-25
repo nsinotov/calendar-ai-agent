@@ -9,21 +9,15 @@ import type { LlmProvider } from "./types.js";
 export type { LlmProvider } from "./types.js";
 export { LlmError } from "./errors.js";
 
-// A union on `provider`: a new provider means one more member and one more case.
-export type LlmConfig =
-  | {
-      provider: "anthropic";
-      apiKey: string;
-      model: string;
-      maxTokens: number;
-      effort?: Effort;
-    }
-  | {
-      provider: "openai";
-      apiKey: string;
-      model: string;
-      maxTokens: number;
-    };
+// `provider` is the identifier from env; the factory below decides what it means.
+export interface LlmConfig {
+  provider: string;
+  apiKey: string;
+  model: string;
+  maxTokens: number;
+  // Anthropic-only; other providers ignore it.
+  effort?: Effort;
+}
 
 export function createLlmProvider(config: LlmConfig, logger: Logger): LlmProvider {
   return new LoggingLlmProvider(createRawProvider(config), logger);
@@ -43,7 +37,7 @@ function createRawProvider(config: LlmConfig): LlmProvider {
         maxTokens: config.maxTokens,
       });
     default:
-      throw new Error(`Unknown LLM provider: "${(config as { provider: string }).provider}"`);
+      throw new Error(`Unknown LLM provider: "${config.provider}"`);
   }
 }
 

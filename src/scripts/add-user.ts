@@ -1,9 +1,10 @@
 // Interactive setup script, run on the server: `pnpm add-user`.
-// Registers a Telegram user, their preferences, and their Google Calendar
-// refresh token (encrypted). Not exposed as a chat command - the admin runs
+// Registers a Telegram user, their preferences, and their calendar
+// credentials (encrypted). Not exposed as a chat command - the admin runs
 // this directly, so secrets never pass through Telegram or the LLM.
 import { createInterface } from "node:readline/promises";
 import { env } from "../config/env.js";
+import { calendarCredentialFields } from "../calendar/index.js";
 import { createStorage } from "../db/index.js";
 
 const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -20,7 +21,6 @@ async function main(): Promise<void> {
     provider: "sqlite",
     dataDir: env.DATA_DIR,
     encryptionKeyHex: env.SECRETS_ENCRYPTION_KEY,
-    conversationRetentionDays: 1, // unused here: this script never reads conversation history
   });
   const { users: userStore, settings: settingsStore, secrets: secretsStore } = storage;
 
@@ -36,9 +36,16 @@ async function main(): Promise<void> {
   const timezone = await ask("Timezone (IANA name)", "Europe/Kyiv");
   const weekStart = (await ask("Week start (monday/sunday)", "monday")) === "sunday" ? "sunday" : "monday";
 
-  console.log("\nGoogle Calendar - run the OAuth flow separately to get a refresh token, then paste it here.");
-  const refreshToken = await ask("Google refresh token");
-  const calendarId = await ask("Google calendar ID", "primary");
+  const providers = Object.keys(calendarCredentialFields);
+  const calendarProvider = await ask(`Calendar provider (${providers.join("/")}, empty to skip)`);
+  if (calendarProvider && !providers.includes(calendarProvider)) {
+    throw new Error(`Unknown calendar provider: "${calendarProvider}"`);
+  }
+
+  const credentials: Record<string, string> = {};
+  for (const field of calendarProvider ? calendarCredentialFields[calendarProvider]! : []) {
+    credentials[field.key] = await ask(field.prompt, field.default);
+  }
 
   userStore.upsert(userId, role);
   settingsStore.update(userId, {
@@ -46,12 +53,12 @@ async function main(): Promise<void> {
     language,
     timezone,
     weekStart,
-    calendarProvider: refreshToken ? "google" : null,
+    calendarProvider: calendarProvider || null,
   });
   // Answers given here are confirmed; anything left empty is still asked during onboarding.
   settingsStore.markOnboardingSteps(userId, name ? ["name", "language", "timezone", "weekStart"] : ["language", "timezone", "weekStart"]);
-  if (refreshToken) {
-    secretsStore.set(userId, "calendar", "google", { refreshToken, calendarId: calendarId || "primary" });
+  if (calendarProvider) {
+    secretsStore.set(userId, "calendar", calendarProvider, credentials);
   }
 
   console.log(`\nUser ${userId} saved.`);

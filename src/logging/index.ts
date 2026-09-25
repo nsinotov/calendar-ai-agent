@@ -5,10 +5,8 @@ import type { LogProvider } from "./types.js";
 
 export type { Logger, LogLevel, LogEntry, LogProvider } from "./types.js";
 
-export type LogProviderName = "console" | "file";
-
 export interface LoggingConfig {
-  providers: LogProviderName[];
+  providers: string[];
   levels: ("error" | "warn" | "info")[];
   debugEnabled: boolean;
   // Exact directory the file provider writes into (caller resolves any default).
@@ -24,7 +22,7 @@ export function createLogger(config: LoggingConfig): CompositeLogger {
       case "file":
         return new FileLogProvider(config.dir, config.retentionDays);
       default:
-        throw new Error(`Unknown log provider: "${String(name)}"`);
+        throw new Error(`Unknown log provider: "${name}"`);
     }
   });
 

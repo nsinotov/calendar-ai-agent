@@ -15,13 +15,12 @@ import type { UserSecretsStore } from "../secrets/user-secrets-store.js";
 import { SqliteUserSecretsStore } from "../secrets/user-secrets-store.js";
 import { openDatabase } from "./database.js";
 
-// A union on `provider`: a new backend means one more member and one more case.
-export type StorageConfig = {
-  provider: "sqlite";
+// `provider` is the identifier from env; the factory below decides what it means.
+export interface StorageConfig {
+  provider: string;
   dataDir: string;
   encryptionKeyHex: string;
-  conversationRetentionDays: number;
-};
+}
 
 export interface Storage {
   users: UserStore;
@@ -42,7 +41,7 @@ export function createStorage(config: StorageConfig): Storage {
       return {
         users: new SqliteUserStore(db),
         settings: new SqliteUserSettingsStore(db),
-        conversations: new SqliteConversationStore(db, config.conversationRetentionDays),
+        conversations: new SqliteConversationStore(db),
         preferences: new SqlitePreferencesStore(db),
         activity: new SqliteActivityMemoryStore(db),
         secrets: new SqliteUserSecretsStore(db, loadEncryptionKey(config.encryptionKeyHex)),
@@ -51,7 +50,7 @@ export function createStorage(config: StorageConfig): Storage {
       };
     }
     default:
-      throw new Error(`Unknown storage provider: "${(config as { provider: string }).provider}"`);
+      throw new Error(`Unknown storage provider: "${config.provider}"`);
   }
 }
 

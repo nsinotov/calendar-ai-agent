@@ -6,12 +6,12 @@ import type { MessagingProvider } from "./types.js";
 
 export type { IncomingMessage, MessageHandler, MessagingProvider } from "./types.js";
 
-// A union on `provider`: a new provider means one more member and one more case.
-export type MessagingConfig = {
-  provider: "telegram";
-  botToken: string;
+// `provider` is the identifier from env; the factory below decides what it means.
+export interface MessagingConfig {
+  provider: string;
+  botToken?: string;
   webhook?: { url: string; secret: string; port: number };
-};
+}
 
 export function createMessagingProvider(config: MessagingConfig, logger: Logger): MessagingProvider {
   return new LoggingMessagingProvider(createRawProvider(config), logger);
@@ -19,10 +19,15 @@ export function createMessagingProvider(config: MessagingConfig, logger: Logger)
 
 function createRawProvider(config: MessagingConfig): MessagingProvider {
   switch (config.provider) {
-    case "telegram":
+    case "telegram": {
+      if (!config.botToken) {
+        throw new Error("Telegram provider requires a bot token");
+      }
+
       return new TelegramMessagingProvider(new Bot(config.botToken), config.webhook);
+    }
     default:
-      throw new Error(`Unknown messaging provider: "${(config as { provider: string }).provider}"`);
+      throw new Error(`Unknown messaging provider: "${config.provider}"`);
   }
 }
 

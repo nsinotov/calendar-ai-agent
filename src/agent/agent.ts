@@ -7,6 +7,7 @@ const DEFAULT_MAX_STEPS = 10;
 export interface AgentContext {
   system: string;
   tools: Tool[];
+  retentionDays: number;
 }
 
 export class Agent {
@@ -19,7 +20,7 @@ export class Agent {
   async reply(userId: number, text: string, context: AgentContext): Promise<string> {
     const userMessage: Message = { role: "user", content: text };
     this.conversations.append(userId, userMessage);
-    const messages = this.conversations.load(userId);
+    const messages = this.conversations.load(userId, context.retentionDays);
     const toolsByName = new Map(context.tools.map((tool) => [tool.definition.name, tool]));
 
     for (let step = 0; step < this.maxSteps; step++) {
