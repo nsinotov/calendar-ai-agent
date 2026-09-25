@@ -62,6 +62,23 @@ export const SCHEMA = `
     updated_at    INTEGER NOT NULL
   );
 
+  -- Per-event reminder lead time chosen by the user; overrides the per-user default for that event.
+  CREATE TABLE IF NOT EXISTS event_reminders (
+    telegram_user_id  INTEGER NOT NULL REFERENCES users (telegram_user_id),
+    event_id          TEXT    NOT NULL,
+    minutes_before    INTEGER NOT NULL,
+    created_at        INTEGER NOT NULL,
+    PRIMARY KEY (telegram_user_id, event_id)
+  );
+
+  -- Dedupe keys of scheduler messages already sent (summaries, event reminders, daily jobs).
+  CREATE TABLE IF NOT EXISTS sent_notifications (
+    telegram_user_id  INTEGER NOT NULL REFERENCES users (telegram_user_id),
+    key               TEXT    NOT NULL,
+    sent_at           INTEGER NOT NULL,
+    PRIMARY KEY (telegram_user_id, key)
+  );
+
   -- AES-256-GCM ciphertext of a provider's credential fields (e.g. a Google refresh token).
   CREATE TABLE IF NOT EXISTS user_secrets (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,

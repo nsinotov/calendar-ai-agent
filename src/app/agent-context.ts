@@ -4,6 +4,7 @@ import {
   createCapabilitiesTool,
   createNotesTools,
   createPreferencesTools,
+  createReminderTools,
   createSettingsTools,
   createSuggestionTools,
   type AgentContext,
@@ -15,7 +16,7 @@ import type { LlmProvider } from "../llm/types.js";
 import { canUse, type Command } from "./commands.js";
 
 export interface AgentContextDeps {
-  storage: Pick<Storage, "users" | "settings" | "preferences" | "notes" | "activity" | "secrets">;
+  storage: Pick<Storage, "users" | "eventReminders" | "settings" | "preferences" | "notes" | "activity" | "secrets">;
   commands: Command[];
   llm: LlmProvider;
   resolveCalendar: (userId: number) => CalendarProvider | null;
@@ -37,6 +38,7 @@ export function createAgentContextBuilder(deps: AgentContextDeps): (userId: numb
       ...(calendar ? createCalendarTools(calendar, { timezone: settings.timezone, now }) : []),
       ...createNotesTools(storage.notes, userId),
       ...createPreferencesTools(storage.preferences, userId),
+      ...(calendar ? createReminderTools(storage.eventReminders, userId) : []),
       ...createSettingsTools({
         settings: storage.settings,
         userId,

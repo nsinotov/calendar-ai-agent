@@ -6,6 +6,7 @@ import type { CalendarProvider } from "./types.js";
 
 export type { CalendarProvider, CalendarEvent, EventInput, EventTime, ListEventsOptions } from "./types.js";
 export { CalendarError } from "./errors.js";
+export { hasEnded } from "./events.js";
 
 // `provider` is the identifier stored per user; the factory below decides what it means.
 export interface CalendarConfig {

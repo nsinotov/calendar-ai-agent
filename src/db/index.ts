@@ -4,6 +4,10 @@ import type { ActivityMemoryStore } from "../memory/activity-memory-store.js";
 import { SqliteActivityMemoryStore } from "../memory/activity-memory-store.js";
 import type { ConversationStore } from "../memory/conversation-store.js";
 import { SqliteConversationStore } from "../memory/conversation-store.js";
+import type { EventReminderStore } from "../memory/event-reminder-store.js";
+import { SqliteEventReminderStore } from "../memory/event-reminder-store.js";
+import type { SentStore } from "../memory/sent-store.js";
+import { SqliteSentStore } from "../memory/sent-store.js";
 import type { PreferencesStore } from "../memory/preferences-store.js";
 import { SqlitePreferencesStore } from "../memory/preferences-store.js";
 import type { UserSettingsStore } from "../memory/user-settings-store.js";
@@ -33,6 +37,8 @@ export interface Storage {
   secrets: UserSecretsStore;
   notes: NotesProvider;
   billing: BillingStore;
+  eventReminders: EventReminderStore;
+  sent: SentStore;
   close(): void;
 }
 
@@ -50,6 +56,8 @@ export function createStorage(config: StorageConfig): Storage {
         secrets: new SqliteUserSecretsStore(db, loadEncryptionKey(config.encryptionKeyHex)),
         notes: createNotesProvider(db),
         billing: new SqliteBillingStore(db),
+        eventReminders: new SqliteEventReminderStore(db),
+        sent: new SqliteSentStore(db),
         close: () => db.close(),
       };
     }

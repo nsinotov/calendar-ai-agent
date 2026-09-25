@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CalendarEvent, CalendarProvider, EventTime } from "../calendar/index.js";
+import { hasEnded, type CalendarEvent, type CalendarProvider, type EventTime } from "../calendar/index.js";
 import { defineTool, type Tool } from "./tool.js";
 
 const dateTime = z.string().datetime({ offset: true });
@@ -130,16 +130,5 @@ export function createCalendarTools(calendar: CalendarProvider, options: { timez
 
 function toEventTime(value: string): EventTime {
   return { allDay: !value.includes("T"), value };
-}
-
-function hasEnded(event: CalendarEvent, now: Date, timezone: string): boolean {
-  if (!event.end.allDay) {
-    return Date.parse(event.end.value) <= now.getTime();
-  }
-
-  // An all-day end date is exclusive, so the event is over once that date is today or earlier.
-  const today = now.toLocaleDateString("en-CA", { timeZone: timezone });
-
-  return event.end.value <= today;
 }
 

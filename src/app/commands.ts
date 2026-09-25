@@ -1,6 +1,7 @@
-import { joinText, type CommandInfo } from "../agent/index.js";
+import type { CommandInfo } from "../agent/index.js";
 import { type BillingService } from "../billing/billing-service.js";
 import type { LlmProvider } from "../llm/types.js";
+import { translate } from "../llm/translate.js";
 import type { ConversationStore } from "../memory/conversation-store.js";
 import type { UserRole } from "../memory/user-store.js";
 
@@ -78,20 +79,5 @@ export function parseCommand(text: string): { name: string; args: string } | nul
   const match = /^\/(\w+)(?:@\w+)?(?:\s+([\s\S]*))?$/.exec(text.trim());
 
   return match ? { name: match[1]!.toLowerCase(), args: match[2]?.trim() ?? "" } : null;
-}
-
-// Falls back to the English text when the LLM is unavailable, so /clear always works.
-async function translate(llm: LlmProvider, language: string, text: string): Promise<string> {
-  try {
-    const response = await llm.complete({
-      system: `Translate the user's message into the language with code "${language}". Reply with the translation only.`,
-      messages: [{ role: "user", content: text }],
-      tools: [],
-    });
-
-    return joinText(response.content) || text;
-  } catch {
-    return text;
-  }
 }
 

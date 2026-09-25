@@ -23,24 +23,26 @@ export function createSuggestionTools(input: SuggestionToolsInput): Tool[] {
         inputSchema: { type: "object", properties: {} },
       },
       z.object({}),
-      async () => {
-        const current = now();
-        const context = await gatherActivityContext(input.calendar, input.notes, input.userId, current);
-        const response = await input.llm.complete({
-          system: suggestionsSystem(input.language),
-          messages: [
-            {
-              role: "user",
-              content: `Current time: ${current.toISOString()}\n\nActivity memory:\n${input.store.get(input.userId) ?? "(none)"}\n\n${formatActivityContext(context)}`,
-            },
-          ],
-          tools: [],
-        });
-
-        return { suggestions: parseSuggestions(joinText(response.content)) };
-      },
+      async () => ({ suggestions: await generateSuggestions(input, input.userId, input.language, now()) }),
     ),
   ];
+}
+
+// WARNING: experimental. Sends the user's events, notes and activity memory (sensitive data) to the LLM.
+export async function generateSuggestions(deps: ActivityDeps, userId: number, language: string, now: Date): Promise<string[]> {
+  const context = await gatherActivityContext(deps.calendar, deps.notes, userId, now);
+  const response = await deps.llm.complete({
+    system: suggestionsSystem(language),
+    messages: [
+      {
+        role: "user",
+        content: `Current time: ${now.toISOString()}\n\nActivity memory:\n${deps.store.get(userId) ?? "(none)"}\n\n${formatActivityContext(context)}`,
+      },
+    ],
+    tools: [],
+  });
+
+  return parseSuggestions(joinText(response.content));
 }
 
 function suggestionsSystem(language: string): string {

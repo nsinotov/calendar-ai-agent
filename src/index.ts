@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { Agent } from "./agent/index.js";
+import { Agent, generateSuggestions } from "./agent/index.js";
 import { BillingLlmProvider } from "./billing/billing-llm-provider.js";
 import { BillingService } from "./billing/billing-service.js";
 import { createMessagingNotifier } from "./billing/notifier.js";
@@ -13,8 +13,15 @@ import { createStorage } from "./db/index.js";
 import { createLlmProvider } from "./llm/index.js";
 import { AlertLogProvider, createLogger } from "./logging/index.js";
 import { createMessagingProvider } from "./messaging/index.js";
+import { createActivityJob } from "./scheduler/jobs/activity-job.js";
+import { createCleanupJob } from "./scheduler/jobs/cleanup-job.js";
+import { createEventReminderJob } from "./scheduler/jobs/event-reminder-job.js";
+import { createSummaryJob } from "./scheduler/jobs/summary-job.js";
+import { Scheduler } from "./scheduler/scheduler.js";
+import type { JobContext } from "./scheduler/types.js";
 
 const OUTAGE_PROBE_INTERVAL_MS = 5 * 60 * 1000;
+const SCHEDULER_TICK_MS = 60 * 1000;
 
 const adminAlerts = new AlertLogProvider();
 const logger = createLogger({
@@ -115,7 +122,39 @@ messaging.onMessage(
   }),
 );
 
+const send = (userId: number, text: string) => messaging.send(userId, text);
+const activityDeps = { llm, notes: storage.notes, store: storage.activity };
+const suggestions = env.SUGGESTIONS_ENABLED
+  ? ({ userId, settings, calendar, now }: JobContext) =>
+      generateSuggestions({ ...activityDeps, calendar }, userId, settings.language, now)
+  : undefined;
+
+const scheduler = new Scheduler(
+  {
+    users: storage.users,
+    settings: storage.settings,
+    resolveCalendar,
+    logger,
+    jobs: [
+      createSummaryJob({ kind: "weekly", sent: storage.sent, send, llm, suggestions }),
+      createSummaryJob({ kind: "daily", sent: storage.sent, send, llm, suggestions }),
+      createEventReminderJob({
+        sent: storage.sent,
+        reminders: storage.eventReminders,
+        send,
+        llm,
+        pollMinutes: env.CALENDAR_POLL_MINUTES,
+        tickMs: SCHEDULER_TICK_MS,
+      }),
+      createCleanupJob({ sent: storage.sent, reminders: storage.eventReminders }),
+      ...(env.SUGGESTIONS_ENABLED ? [createActivityJob({ sent: storage.sent, activity: activityDeps })] : []),
+    ],
+  },
+  SCHEDULER_TICK_MS,
+);
+
 async function shutdown(): Promise<void> {
+  scheduler.stop();
   await messaging.stop();
   storage.close();
   process.exit(0);
@@ -125,5 +164,6 @@ process.on("SIGINT", () => void shutdown());
 process.on("SIGTERM", () => void shutdown());
 
 await messaging.start();
+scheduler.start();
 logger.info("app.started");
 
