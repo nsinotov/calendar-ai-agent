@@ -75,11 +75,24 @@ pnpm add-user
 
 ## Deployment
 
+Long polling (no public URL needed):
+
 ```bash
 docker compose up -d --build
 ```
 
-Set `TELEGRAM_WEBHOOK_URL` to a public HTTPS URL that proxies to the container's `PORT`. Leave it empty to use long polling.
+Telegram webhook behind Caddy (automatic HTTPS): point a domain at the server, set `DOMAIN`, `TELEGRAM_WEBHOOK_URL` (`https://<DOMAIN>/telegram`) and `TELEGRAM_WEBHOOK_SECRET` in `.env`, then:
+
+```bash
+docker compose --profile webhook up -d --build
+```
+
+The database lives in the `agent-data` volume. The admin scripts run inside the container:
+
+```bash
+docker compose exec agent node dist/scripts/add-user.js
+docker compose exec agent node dist/scripts/set-balance.js 20
+```
 
 ## Scripts
 
