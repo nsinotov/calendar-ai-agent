@@ -30,6 +30,8 @@ function createRawProvider(config: CalendarConfig): CalendarProvider {
 
       return new GoogleCalendarProvider(client, config.calendarId);
     }
+    default:
+      throw new Error(`Unknown calendar provider: "${(config as { provider: string }).provider}"`);
   }
 }
 

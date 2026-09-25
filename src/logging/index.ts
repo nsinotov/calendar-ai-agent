@@ -23,6 +23,8 @@ export function createLogger(config: LoggingConfig): CompositeLogger {
         return new ConsoleLogProvider();
       case "file":
         return new FileLogProvider(config.dir, config.retentionDays);
+      default:
+        throw new Error(`Unknown log provider: "${String(name)}"`);
     }
   });
 

@@ -42,6 +42,8 @@ function createRawProvider(config: LlmConfig): LlmProvider {
         model: config.model,
         maxTokens: config.maxTokens,
       });
+    default:
+      throw new Error(`Unknown LLM provider: "${(config as { provider: string }).provider}"`);
   }
 }
 
