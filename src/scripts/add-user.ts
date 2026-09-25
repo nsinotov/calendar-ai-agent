@@ -6,6 +6,7 @@ import { createInterface } from "node:readline/promises";
 import { env } from "../config/env.js";
 import { openDatabase } from "../db/database.js";
 import { SqliteUserSettingsStore } from "../memory/user-settings-store.js";
+import { SqliteUserStore } from "../memory/user-store.js";
 import { loadEncryptionKey } from "../secrets/crypto.js";
 import { SqliteUserSecretsStore } from "../secrets/user-secrets-store.js";
 
@@ -20,6 +21,7 @@ async function ask(question: string, fallback?: string): Promise<string> {
 
 async function main(): Promise<void> {
   const db = openDatabase(env.DATA_DIR);
+  const userStore = new SqliteUserStore(db);
   const settingsStore = new SqliteUserSettingsStore(db);
   const secretsStore = new SqliteUserSecretsStore(db, loadEncryptionKey(env.SECRETS_ENCRYPTION_KEY));
 
@@ -29,6 +31,7 @@ async function main(): Promise<void> {
     throw new Error(`Invalid Telegram user ID: "${idInput}"`);
   }
 
+  const role = (await ask("Role (admin/user)", "user")) === "admin" ? "admin" : "user";
   const name = await ask("Name (leave empty to skip)");
   const language = await ask("Language (ISO code)", "uk");
   const timezone = await ask("Timezone (IANA name)", "Europe/Kyiv");
@@ -38,10 +41,7 @@ async function main(): Promise<void> {
   const refreshToken = await ask("Google refresh token");
   const calendarId = await ask("Google calendar ID", "primary");
 
-  db.prepare("INSERT OR IGNORE INTO users (telegram_user_id, created_at) VALUES (?, ?)").run(
-    userId,
-    Date.now(),
-  );
+  userStore.upsert(userId, role);
   settingsStore.update(userId, {
     ...(name && { name }),
     language,

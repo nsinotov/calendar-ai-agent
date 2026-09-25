@@ -5,6 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 export const SCHEMA = `
   CREATE TABLE IF NOT EXISTS users (
     telegram_user_id INTEGER PRIMARY KEY,
+    role             TEXT    NOT NULL DEFAULT 'user' CHECK (role IN ('admin', 'user')),
     created_at       INTEGER NOT NULL
   );
 
