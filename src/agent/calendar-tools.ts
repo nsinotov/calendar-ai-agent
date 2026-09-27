@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { hasEnded, type CalendarEvent, type CalendarProvider, type EventTime } from "../calendar/index.js";
+import { hasEnded, type CalendarProvider, type EventTime } from "../calendar/index.js";
 import { defineTool, type Tool } from "./tool.js";
 
 const dateTime = z.string().datetime({ offset: true });
@@ -118,11 +118,19 @@ export function createCalendarTools(calendar: CalendarProvider, options: { timez
       async () => {
         const events = await calendar.listEvents({ timeMax: now().toISOString() });
         const old = events.filter((event) => hasEnded(event, now(), options.timezone));
+        let deleted = 0;
+        let skipped = 0;
         for (const event of old) {
-          await calendar.deleteEvent(event.id);
+          try {
+            await calendar.deleteEvent(event.id);
+            deleted++;
+          } catch {
+            // Some events (e.g. Google's auto-generated birthday events) reject deletion; don't let one abort the rest.
+            skipped++;
+          }
         }
 
-        return { deleted: old.length };
+        return { deleted, skipped };
       },
     ),
   ];

@@ -17,7 +17,10 @@ function findTool(tools: Tool[], name: string): Tool {
   return tool;
 }
 
-function fakeCalendar(events: CalendarEvent[] = []): {
+function fakeCalendar(
+  events: CalendarEvent[] = [],
+  options: { undeletable?: string[] } = {},
+): {
   calendar: CalendarProvider;
   created: EventInput[];
   updates: { id: string; input: Partial<EventInput> }[];
@@ -26,6 +29,7 @@ function fakeCalendar(events: CalendarEvent[] = []): {
   const created: EventInput[] = [];
   const updates: { id: string; input: Partial<EventInput> }[] = [];
   const deleted: string[] = [];
+  const undeletable = options.undeletable ?? [];
   const calendar: CalendarProvider = {
     async listEvents() {
       return events;
@@ -41,6 +45,9 @@ function fakeCalendar(events: CalendarEvent[] = []): {
       return { ...events[0]!, id, ...input };
     },
     async deleteEvent(id) {
+      if (undeletable.includes(id)) {
+        throw new Error("not valid for this event type");
+      }
       deleted.push(id);
     },
   };
@@ -104,7 +111,23 @@ test("delete_old_events deletes only events that have already ended", async () =
   const result = await findTool(tools, "delete_old_events").execute({});
 
   assert.deepEqual(deleted, ["past-timed", "past-allday"]);
-  assert.equal(result, '{"deleted":2}');
+  assert.equal(result, '{"deleted":2,"skipped":0}');
+});
+
+test("delete_old_events skips events the provider refuses to delete and continues with the rest", async () => {
+  const { calendar, deleted } = fakeCalendar(
+    [
+      event("past-timed", { allDay: false, value: "2026-09-24T08:00:00Z" }, { allDay: false, value: "2026-09-24T09:00:00Z" }),
+      event("past-birthday", { allDay: true, value: "2026-09-22" }, { allDay: true, value: "2026-09-23" }),
+    ],
+    { undeletable: ["past-birthday"] },
+  );
+  const tools = createCalendarTools(calendar, { timezone: "UTC", now: () => NOW });
+
+  const result = await findTool(tools, "delete_old_events").execute({});
+
+  assert.deepEqual(deleted, ["past-timed"]);
+  assert.equal(result, '{"deleted":1,"skipped":1}');
 });
 
 test("delete_old_events uses the user's timezone for all-day events", async () => {
