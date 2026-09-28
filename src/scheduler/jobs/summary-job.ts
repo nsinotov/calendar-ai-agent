@@ -29,7 +29,11 @@ export function createSummaryJob(deps: SummaryJobDeps): Job {
       const local = localParts(now, settings.timezone);
       const key = `${deps.kind}:${local.date}`;
 
-      if (!enabled || (weekly && local.weekday !== settings.weekStart) || !inWindow(local, time, GRACE_MINUTES) || deps.sent.has(userId, key)) {
+      // On the week's first day the weekly summary already lists today, so skip the daily one if they're due at the same time.
+      const supersededByWeekly =
+        !weekly && local.weekday === settings.weekStart && settings.weeklyReminderEnabled && settings.weeklyReminderTime === settings.dailyReminderTime;
+
+      if (!enabled || (weekly && local.weekday !== settings.weekStart) || supersededByWeekly || !inWindow(local, time, GRACE_MINUTES) || deps.sent.has(userId, key)) {
         return;
       }
 

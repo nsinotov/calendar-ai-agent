@@ -118,6 +118,28 @@ test("the weekly summary is sent only on the user's first day of the week", asyn
   assert.match(messages[0]![1], /coming week/);
 });
 
+test("the daily summary is skipped on the week's first day when it's due at the same time as the weekly one", async () => {
+  const { settingsStore, sent, messages, send } = setup();
+  const settings = english(settingsStore.get(1)); // Monday weekStart, both times default to 08:00
+  const calendar = fakeCalendar([timed("e1", "Dentist", "2026-09-28T09:00:00Z")]);
+  const job = createSummaryJob({ kind: "daily", sent, send, llm: noLlm });
+
+  await job.run(context(calendar, settings, "2026-09-28T08:05:00Z")); // Monday
+
+  assert.equal(messages.length, 0);
+});
+
+test("the daily summary still fires on the week's first day when its time differs from the weekly one", async () => {
+  const { settingsStore, sent, messages, send } = setup();
+  const settings = { ...english(settingsStore.get(1)), dailyReminderTime: "07:00" };
+  const calendar = fakeCalendar([timed("e1", "Dentist", "2026-09-28T09:00:00Z")]);
+  const job = createSummaryJob({ kind: "daily", sent, send, llm: noLlm });
+
+  await job.run(context(calendar, settings, "2026-09-28T07:05:00Z")); // Monday
+
+  assert.equal(messages.length, 1);
+});
+
 test("suggestions are appended to the summary", async () => {
   const { settingsStore, sent, messages, send } = setup();
   const calendar = fakeCalendar([timed("e1", "Dentist", "2026-09-25T09:00:00Z")]);
