@@ -19,7 +19,7 @@ AI-powered calendar management agent. Users communicate via messaging platforms 
 - Multi-user (shared bot, per-user settings and encrypted calendar credentials in SQLite), configurable conversation language (default Ukrainian)
 - Reminders: weekly summary, daily summary (a "nothing planned" message on empty days), and a configurable lead-time reminder before each timed event, with an optional per-event lead time; a missed reminder is sent late with an apology until the event starts
 - Configurable first day of the week and old-events handling (keep/delete)
-- Conversation history kept for N days (configurable), `/clear` resets it
+- Conversation history kept for N days (configurable per user, default from env); tool/calendar data within it goes stale after a separate configurable window (`TOOL_RESULT_RETENTION_MINUTES`) to cap token cost — the agent explains both limits if asked. `/clear` resets the history
 - Notes/reminders by context ("buy in market"); agent recalls them on request and removes done items, or clears all
 - Onboarding: agent asks the name and walks through settings step by step (skippable, defaults confirmed); settings viewable/changeable by chat
 - User preferences memory: standing behaviour instructions stored per user in English, injected into the system prompt; a revoking request removes the old instruction
