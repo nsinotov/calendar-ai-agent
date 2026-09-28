@@ -1,6 +1,16 @@
 import type { DatabaseSync } from "node:sqlite";
 import { z } from "zod";
 
+const DEFAULT_LANGUAGE = "uk";
+const DEFAULT_TIMEZONE = "Europe/Kyiv";
+const DEFAULT_WEEK_START = "monday";
+const DEFAULT_CONTEXT_RETENTION_DAYS = 7;
+const DEFAULT_REMINDER_ENABLED = true;
+const DEFAULT_REMINDER_TIME = "08:00";
+const DEFAULT_EVENT_REMINDER_MINUTES_BEFORE = 60;
+const DEFAULT_OLD_EVENTS_ACTION = "keep";
+const DEFAULT_OLD_EVENTS_RETENTION_DAYS = 30;
+
 const timeOfDay = (fallback: string) =>
   z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:MM").default(fallback);
 
@@ -33,20 +43,20 @@ function buildUserSettingsSchema(defaultContextRetentionDays: number) {
     name: z.string().min(1).nullable().default(null),
     onboarding: onboardingSchema.default({}),
 
-    language: z.string().min(2).default("uk"),
-    timezone: z.string().min(1).default("Europe/Kyiv"),
-    weekStart: z.enum(["monday", "sunday"]).default("monday"),
+    language: z.string().min(2).default(DEFAULT_LANGUAGE),
+    timezone: z.string().min(1).default(DEFAULT_TIMEZONE),
+    weekStart: z.enum(["monday", "sunday"]).default(DEFAULT_WEEK_START),
     contextRetentionDays: z.number().int().positive().default(defaultContextRetentionDays),
 
-    weeklyReminderEnabled: z.boolean().default(true),
-    weeklyReminderTime: timeOfDay("08:00"),
-    dailyReminderEnabled: z.boolean().default(true),
-    dailyReminderTime: timeOfDay("08:00"),
-    eventReminderEnabled: z.boolean().default(true),
-    eventReminderMinutesBefore: z.number().int().positive().default(60),
+    weeklyReminderEnabled: z.boolean().default(DEFAULT_REMINDER_ENABLED),
+    weeklyReminderTime: timeOfDay(DEFAULT_REMINDER_TIME),
+    dailyReminderEnabled: z.boolean().default(DEFAULT_REMINDER_ENABLED),
+    dailyReminderTime: timeOfDay(DEFAULT_REMINDER_TIME),
+    eventReminderEnabled: z.boolean().default(DEFAULT_REMINDER_ENABLED),
+    eventReminderMinutesBefore: z.number().int().positive().default(DEFAULT_EVENT_REMINDER_MINUTES_BEFORE),
 
-    oldEventsAction: z.enum(["keep", "delete"]).default("keep"),
-    oldEventsRetentionDays: z.number().int().positive().default(30),
+    oldEventsAction: z.enum(["keep", "delete"]).default(DEFAULT_OLD_EVENTS_ACTION),
+    oldEventsRetentionDays: z.number().int().positive().default(DEFAULT_OLD_EVENTS_RETENTION_DAYS),
 
     // Which registered calendar provider (see UserSecretsStore.listProviders) is active.
     calendarProvider: z.string().nullable().default(null),
@@ -81,7 +91,7 @@ export class SqliteUserSettingsStore implements UserSettingsStore {
 
   constructor(
     private readonly db: DatabaseSync,
-    defaultContextRetentionDays = 7,
+    defaultContextRetentionDays = DEFAULT_CONTEXT_RETENTION_DAYS,
   ) {
     this.schema = buildUserSettingsSchema(defaultContextRetentionDays);
   }

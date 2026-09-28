@@ -20,6 +20,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const MINUTE_MS = 60 * 1000;
 const STALE_TOOL_RESULT_NOTICE =
   "[Tool result expired from context; call the tool again if you still need this data.]";
+// No caller-supplied limit means tool results never go stale.
+const DEFAULT_TOOL_RESULT_RETENTION_MINUTES = Infinity;
 
 export class SqliteConversationStore implements ConversationStore {
   constructor(private readonly db: DatabaseSync) {}
@@ -30,7 +32,7 @@ export class SqliteConversationStore implements ConversationStore {
       .run(userId, message.role, JSON.stringify(message.content), Date.now());
   }
 
-  load(userId: number, retentionDays: number, toolResultRetentionMinutes = Infinity): Message[] {
+  load(userId: number, retentionDays: number, toolResultRetentionMinutes = DEFAULT_TOOL_RESULT_RETENTION_MINUTES): Message[] {
     this.purgeExpired(userId, retentionDays);
     const rows = this.db
       .prepare("SELECT role, content, created_at FROM messages WHERE telegram_user_id = ? ORDER BY id")
