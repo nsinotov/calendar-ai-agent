@@ -83,6 +83,11 @@ const envSchema = z.object({
 
   STORAGE_PROVIDER: z.string().min(1).default("sqlite"),
   DATA_DIR: z.string().min(1).default("./data"),
+  // Default for a new user's conversation-history retention (days); changeable per user afterwards.
+  CONTEXT_RETENTION_DAYS: z.coerce.number().int().positive().default(7),
+  // How long a tool result (e.g. calendar data) stays fresh in the conversation history before
+  // it's redacted from context; the surrounding chat text is unaffected.
+  TOOL_RESULT_RETENTION_MINUTES: z.coerce.number().int().positive().default(60),
 
   // AES-256-GCM key for per-user secrets (Google refresh tokens, ...): 32 bytes, hex-encoded.
   // Generate with: openssl rand -hex 32

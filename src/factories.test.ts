@@ -9,7 +9,7 @@ const logger: Logger = { error() {}, warn() {}, info() {}, debug() {} };
 
 test("factories reject an unknown provider identifier", () => {
   assert.throws(
-    () => createStorage({ provider: "nope", dataDir: "./unused", encryptionKeyHex: "0".repeat(64) }),
+    () => createStorage({ provider: "nope", dataDir: "./unused", encryptionKeyHex: "0".repeat(64), contextRetentionDays: 7 }),
     /Unknown storage provider: "nope"/,
   );
   assert.throws(

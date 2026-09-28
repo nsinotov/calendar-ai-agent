@@ -13,7 +13,7 @@ const llm = {} as LlmProvider;
 
 function build(options: { calendar: CalendarProvider | null; suggestionsEnabled: boolean }): string[] {
   const dataDir = mkdtempSync(join(tmpdir(), "context-"));
-  const storage = createStorage({ provider: "sqlite", dataDir, encryptionKeyHex: "0".repeat(64) });
+  const storage = createStorage({ provider: "sqlite", dataDir, encryptionKeyHex: "0".repeat(64), contextRetentionDays: 7 });
 
   try {
     storage.users.upsert(1, "user");
@@ -24,6 +24,7 @@ function build(options: { calendar: CalendarProvider | null; suggestionsEnabled:
       resolveCalendar: () => options.calendar,
       allowedTopics: [],
       suggestionsEnabled: options.suggestionsEnabled,
+      toolResultRetentionMinutes: 60,
     })(1);
 
     return context.tools.map((tool) => tool.definition.name);
@@ -53,7 +54,7 @@ test("get_suggestions is registered only when the flag is on", () => {
 
 test("get_capabilities lists only the commands the user's role may use", async () => {
   const dataDir = mkdtempSync(join(tmpdir(), "context-"));
-  const storage = createStorage({ provider: "sqlite", dataDir, encryptionKeyHex: "0".repeat(64) });
+  const storage = createStorage({ provider: "sqlite", dataDir, encryptionKeyHex: "0".repeat(64), contextRetentionDays: 7 });
   const commands = [
     { name: "clear", usage: "/clear", description: "Clear.", role: "user" as const, run: async () => "" },
     { name: "balance", usage: "/balance", description: "Balance.", role: "admin" as const, run: async () => "" },
@@ -69,6 +70,7 @@ test("get_capabilities lists only the commands the user's role may use", async (
       resolveCalendar: () => null,
       allowedTopics: [],
       suggestionsEnabled: false,
+      toolResultRetentionMinutes: 60,
     });
     const usages = async (userId: number) => {
       const tool = builder(userId).tools.find((candidate) => candidate.definition.name === "get_capabilities")!;

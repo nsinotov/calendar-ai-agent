@@ -26,6 +26,8 @@ export interface StorageConfig {
   provider: string;
   dataDir: string;
   encryptionKeyHex: string;
+  // Default for a new user's conversation-history retention (days).
+  contextRetentionDays: number;
 }
 
 export interface Storage {
@@ -49,7 +51,7 @@ export function createStorage(config: StorageConfig): Storage {
 
       return {
         users: new SqliteUserStore(db),
-        settings: new SqliteUserSettingsStore(db),
+        settings: new SqliteUserSettingsStore(db, config.contextRetentionDays),
         conversations: new SqliteConversationStore(db),
         preferences: new SqlitePreferencesStore(db),
         activity: new SqliteActivityMemoryStore(db),

@@ -43,7 +43,7 @@ function setup(llm: LlmProvider) {
     billing,
     commands: createCommands({ conversations, billing, llm, languageOf: () => "uk" }),
     agent: new Agent(llm, conversations),
-    buildContext: () => ({ system: "s", tools: [], retentionDays: 7 }),
+    buildContext: () => ({ system: "s", tools: [], retentionDays: 7, toolResultRetentionMinutes: 60 }),
   });
 
   return { handler, sent, conversations, billing, billingStore };

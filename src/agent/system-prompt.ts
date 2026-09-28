@@ -11,10 +11,19 @@ export interface SystemPromptInput {
   preferences: Preference[];
   // Experimental activity memory; omit (or null) when the suggestions feature is off.
   activitySummary?: string | null;
+  // How long a tool result (e.g. calendar data) stays fresh in the conversation history before it's redacted.
+  toolResultRetentionMinutes: number;
   now: Date;
 }
 
-export function buildSystemPrompt({ settings, allowedTopics, preferences, activitySummary, now }: SystemPromptInput): string {
+export function buildSystemPrompt({
+  settings,
+  allowedTopics,
+  preferences,
+  activitySummary,
+  toolResultRetentionMinutes,
+  now,
+}: SystemPromptInput): string {
   const language = languageName(settings.language);
   const sections = [
     "You are a personal assistant inside a chat app. You manage the user's calendar events and their notes/reminders using the provided tools.",
@@ -31,6 +40,12 @@ export function buildSystemPrompt({ settings, allowedTopics, preferences, activi
       settings.name
         ? `- The user's name is ${settings.name}. Use it from time to time, not in every message.`
         : "- You don't know the user's name. Never invent one.",
+    ].join("\n"),
+    [
+      "Memory:",
+      `- Chat history is kept for ${settings.contextRetentionDays} day(s).`,
+      `- Calendar/tool data seen earlier in the conversation is only trusted for ${formatDuration(toolResultRetentionMinutes)} after it was fetched; past that it's treated as stale, so call the tool again instead of relying on it.`,
+      "- If the user asks what you remember or how long you keep things, tell them these two limits.",
     ].join("\n"),
     [
       "Rules:",
@@ -87,6 +102,16 @@ function onboardingSection(settings: UserSettings): string {
 
 function onOff(enabled: boolean): string {
   return enabled ? "on" : "off";
+}
+
+function formatDuration(minutes: number): string {
+  if (minutes % 60 === 0) {
+    const hours = minutes / 60;
+
+    return `${hours} hour${hours === 1 ? "" : "s"}`;
+  }
+
+  return `${minutes} minute${minutes === 1 ? "" : "s"}`;
 }
 
 function preferencesSection(preferences: Preference[]): string {

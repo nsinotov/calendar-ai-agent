@@ -28,30 +28,32 @@ const onboardingSchema = z.object(
 
 // Every field has a default, so a settings blob written before a field
 // existed still parses correctly - new settings never need a migration.
-const userSettingsSchema = z.object({
-  name: z.string().min(1).nullable().default(null),
-  onboarding: onboardingSchema.default({}),
+function buildUserSettingsSchema(defaultContextRetentionDays: number) {
+  return z.object({
+    name: z.string().min(1).nullable().default(null),
+    onboarding: onboardingSchema.default({}),
 
-  language: z.string().min(2).default("uk"),
-  timezone: z.string().min(1).default("Europe/Kyiv"),
-  weekStart: z.enum(["monday", "sunday"]).default("monday"),
-  contextRetentionDays: z.number().int().positive().default(7),
+    language: z.string().min(2).default("uk"),
+    timezone: z.string().min(1).default("Europe/Kyiv"),
+    weekStart: z.enum(["monday", "sunday"]).default("monday"),
+    contextRetentionDays: z.number().int().positive().default(defaultContextRetentionDays),
 
-  weeklyReminderEnabled: z.boolean().default(true),
-  weeklyReminderTime: timeOfDay("08:00"),
-  dailyReminderEnabled: z.boolean().default(true),
-  dailyReminderTime: timeOfDay("08:00"),
-  eventReminderEnabled: z.boolean().default(true),
-  eventReminderMinutesBefore: z.number().int().positive().default(60),
+    weeklyReminderEnabled: z.boolean().default(true),
+    weeklyReminderTime: timeOfDay("08:00"),
+    dailyReminderEnabled: z.boolean().default(true),
+    dailyReminderTime: timeOfDay("08:00"),
+    eventReminderEnabled: z.boolean().default(true),
+    eventReminderMinutesBefore: z.number().int().positive().default(60),
 
-  oldEventsAction: z.enum(["keep", "delete"]).default("keep"),
-  oldEventsRetentionDays: z.number().int().positive().default(30),
+    oldEventsAction: z.enum(["keep", "delete"]).default("keep"),
+    oldEventsRetentionDays: z.number().int().positive().default(30),
 
-  // Which registered calendar provider (see UserSecretsStore.listProviders) is active.
-  calendarProvider: z.string().nullable().default(null),
-});
+    // Which registered calendar provider (see UserSecretsStore.listProviders) is active.
+    calendarProvider: z.string().nullable().default(null),
+  });
+}
 
-export type UserSettings = z.infer<typeof userSettingsSchema>;
+export type UserSettings = z.infer<ReturnType<typeof buildUserSettingsSchema>>;
 
 export interface UserSettingsStore {
   get(userId: number): UserSettings;
@@ -75,7 +77,14 @@ interface SettingsRow {
 }
 
 export class SqliteUserSettingsStore implements UserSettingsStore {
-  constructor(private readonly db: DatabaseSync) {}
+  private readonly schema: ReturnType<typeof buildUserSettingsSchema>;
+
+  constructor(
+    private readonly db: DatabaseSync,
+    defaultContextRetentionDays = 7,
+  ) {
+    this.schema = buildUserSettingsSchema(defaultContextRetentionDays);
+  }
 
   get(userId: number): UserSettings {
     const row = this.db
@@ -83,15 +92,15 @@ export class SqliteUserSettingsStore implements UserSettingsStore {
       .get(userId) as SettingsRow | undefined;
 
     if (!row) {
-      return userSettingsSchema.parse({});
+      return this.schema.parse({});
     }
 
-    return userSettingsSchema.parse(JSON.parse(row.settings));
+    return this.schema.parse(JSON.parse(row.settings));
   }
 
   update(userId: number, patch: Partial<UserSettings>): UserSettings {
     const merged = { ...this.get(userId), ...patch };
-    const validated = userSettingsSchema.parse(merged);
+    const validated = this.schema.parse(merged);
 
     this.db
       .prepare(

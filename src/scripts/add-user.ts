@@ -21,6 +21,7 @@ async function main(): Promise<void> {
     provider: "sqlite",
     dataDir: env.DATA_DIR,
     encryptionKeyHex: env.SECRETS_ENCRYPTION_KEY,
+    contextRetentionDays: env.CONTEXT_RETENTION_DAYS,
   });
   const { users: userStore, settings: settingsStore, secrets: secretsStore } = storage;
 

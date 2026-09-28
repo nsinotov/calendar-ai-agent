@@ -37,6 +37,7 @@ const storage = createStorage({
   provider: env.STORAGE_PROVIDER,
   dataDir: env.DATA_DIR,
   encryptionKeyHex: env.SECRETS_ENCRYPTION_KEY,
+  contextRetentionDays: env.CONTEXT_RETENTION_DAYS,
 });
 
 const messaging = createMessagingProvider(
@@ -118,6 +119,7 @@ messaging.onMessage(
       resolveCalendar,
       allowedTopics: env.ALLOWED_TOPICS,
       suggestionsEnabled: env.SUGGESTIONS_ENABLED,
+      toolResultRetentionMinutes: env.TOOL_RESULT_RETENTION_MINUTES,
     }),
   }),
 );

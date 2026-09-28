@@ -26,6 +26,16 @@ test("get() returns schema defaults when no row exists", () => {
   assert.deepEqual(remainingOnboardingSteps(settings), ONBOARDING_STEPS);
   assert.equal(settings.language, "uk");
   assert.equal(settings.weekStart, "monday");
+  assert.equal(settings.contextRetentionDays, 7);
+});
+
+test("the default context retention is configurable per store instance", () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec(SCHEMA);
+  db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0)").run();
+  const store = new SqliteUserSettingsStore(db, 30);
+
+  assert.equal(store.get(1).contextRetentionDays, 30);
 });
 
 test("update() merges a partial patch onto existing settings", () => {

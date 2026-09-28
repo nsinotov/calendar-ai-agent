@@ -22,6 +22,7 @@ export interface AgentContextDeps {
   resolveCalendar: (userId: number) => CalendarProvider | null;
   allowedTopics: string[];
   suggestionsEnabled: boolean;
+  toolResultRetentionMinutes: number;
   now?: () => Date;
 }
 
@@ -68,10 +69,12 @@ export function createAgentContextBuilder(deps: AgentContextDeps): (userId: numb
         allowedTopics: deps.allowedTopics,
         preferences: storage.preferences.list(userId),
         activitySummary: deps.suggestionsEnabled ? storage.activity.get(userId) : undefined,
+        toolResultRetentionMinutes: deps.toolResultRetentionMinutes,
         now: now(),
       }),
       tools: [...tools, createCapabilitiesTool(tools, availableCommands)],
       retentionDays: settings.contextRetentionDays,
+      toolResultRetentionMinutes: deps.toolResultRetentionMinutes,
     };
   };
 }

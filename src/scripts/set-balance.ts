@@ -12,6 +12,7 @@ const storage = createStorage({
   provider: env.STORAGE_PROVIDER,
   dataDir: env.DATA_DIR,
   encryptionKeyHex: env.SECRETS_ENCRYPTION_KEY,
+  contextRetentionDays: env.CONTEXT_RETENTION_DAYS,
 });
 storage.billing.setBalance(amount);
 storage.close();
