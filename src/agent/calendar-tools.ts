@@ -119,13 +119,13 @@ export function createCalendarTools(calendar: CalendarProvider, options: { timez
         const events = await calendar.listEvents({ timeMax: now().toISOString() });
         const old = events.filter((event) => hasEnded(event, now(), options.timezone));
         let deleted = 0;
-        let skipped = 0;
-        for (const event of old) {
+        let skipped = old.filter((event) => !calendar.canDelete(event)).length;
+        for (const event of old.filter((event) => calendar.canDelete(event))) {
           try {
             await calendar.deleteEvent(event.id);
             deleted++;
           } catch {
-            // Some events (e.g. Google's auto-generated birthday events) reject deletion; don't let one abort the rest.
+            // A type we don't know about yet also rejected deletion; don't let it abort the rest.
             skipped++;
           }
         }

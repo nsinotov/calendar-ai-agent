@@ -31,6 +31,7 @@ test("listEvents() logs a debug request, then an info response with just the cou
     createEvent: async () => sampleEvent,
     updateEvent: async () => sampleEvent,
     deleteEvent: async () => {},
+    canDelete: () => true,
   };
   const logger = fakeLogger();
   const provider = new LoggingCalendarProvider(inner, logger);
@@ -53,6 +54,7 @@ test("createEvent() failure logs the CalendarError kind and rethrows", async () 
     },
     updateEvent: async () => sampleEvent,
     deleteEvent: async () => {},
+    canDelete: () => true,
   };
   const logger = fakeLogger();
   const provider = new LoggingCalendarProvider(inner, logger);
@@ -65,5 +67,21 @@ test("createEvent() failure logs the CalendarError kind and rethrows", async () 
   const [level, , context] = logger.calls.at(-1)!;
   assert.equal(level, "error");
   assert.equal(context?.kind, "rate_limit");
+});
+
+test("canDelete() passes through to the inner provider without logging", () => {
+  const inner: CalendarProvider = {
+    listEvents: async () => [],
+    createEvent: async () => sampleEvent,
+    updateEvent: async () => sampleEvent,
+    deleteEvent: async () => {},
+    canDelete: (event) => event.id !== "no",
+  };
+  const logger = fakeLogger();
+  const provider = new LoggingCalendarProvider(inner, logger);
+
+  assert.equal(provider.canDelete({ ...sampleEvent, id: "yes" }), true);
+  assert.equal(provider.canDelete({ ...sampleEvent, id: "no" }), false);
+  assert.deepEqual(logger.calls, []);
 });
 

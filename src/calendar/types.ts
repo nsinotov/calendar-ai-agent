@@ -15,6 +15,9 @@ export interface CalendarEvent {
   start: EventTime;
   end: EventTime;
   status: EventStatus;
+  // Set only for a non-default type (e.g. "birthday"). Meaning is provider-specific;
+  // see the provider's `canDelete()` for which types (if any) it rejects deleting.
+  eventType?: string;
 }
 
 export interface EventInput {
@@ -36,5 +39,9 @@ export interface CalendarProvider {
   createEvent(input: EventInput): Promise<CalendarEvent>;
   updateEvent(id: string, input: Partial<EventInput>): Promise<CalendarEvent>;
   deleteEvent(id: string): Promise<void>;
+  // Whether this provider supports deleting this event at all (e.g. Google rejects deleting a
+  // Contacts-synced birthday event). A cheap, synchronous hint for bulk operations to skip
+  // events without an API round trip; deleteEvent is still the source of truth on a single call.
+  canDelete(event: CalendarEvent): boolean;
 }
 

@@ -49,6 +49,9 @@ function setup(reply: string, events: CalendarEvent[] = []) {
     async deleteEvent() {
       throw new Error("not used");
     },
+    canDelete() {
+      throw new Error("not used");
+    },
   };
 
   return {

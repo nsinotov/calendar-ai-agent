@@ -25,10 +25,12 @@ function fakeCalendar(
   created: EventInput[];
   updates: { id: string; input: Partial<EventInput> }[];
   deleted: string[];
+  deleteAttempts: string[];
 } {
   const created: EventInput[] = [];
   const updates: { id: string; input: Partial<EventInput> }[] = [];
   const deleted: string[] = [];
+  const deleteAttempts: string[] = [];
   const undeletable = options.undeletable ?? [];
   const calendar: CalendarProvider = {
     async listEvents() {
@@ -45,18 +47,22 @@ function fakeCalendar(
       return { ...events[0]!, id, ...input };
     },
     async deleteEvent(id) {
+      deleteAttempts.push(id);
       if (undeletable.includes(id)) {
         throw new Error("not valid for this event type");
       }
       deleted.push(id);
     },
+    canDelete(event) {
+      return event.eventType !== "birthday";
+    },
   };
 
-  return { calendar, created, updates, deleted };
+  return { calendar, created, updates, deleted, deleteAttempts };
 }
 
-function event(id: string, start: CalendarEvent["start"], end: CalendarEvent["end"]): CalendarEvent {
-  return { id, title: id, start, end, status: "confirmed" };
+function event(id: string, start: CalendarEvent["start"], end: CalendarEvent["end"], eventType?: string): CalendarEvent {
+  return { id, title: id, start, end, status: "confirmed", eventType };
 }
 
 const NOW = new Date("2026-09-24T12:00:00Z");
@@ -127,6 +133,20 @@ test("delete_old_events skips events the provider refuses to delete and continue
   const result = await findTool(tools, "delete_old_events").execute({});
 
   assert.deepEqual(deleted, ["past-timed"]);
+  assert.equal(result, '{"deleted":1,"skipped":1}');
+});
+
+test("delete_old_events skips a known non-deletable eventType without even attempting the call", async () => {
+  const { calendar, deleted, deleteAttempts } = fakeCalendar([
+    event("past-timed", { allDay: false, value: "2026-09-24T08:00:00Z" }, { allDay: false, value: "2026-09-24T09:00:00Z" }),
+    event("past-birthday", { allDay: true, value: "2026-09-22" }, { allDay: true, value: "2026-09-23" }, "birthday"),
+  ]);
+  const tools = createCalendarTools(calendar, { timezone: "UTC", now: () => NOW });
+
+  const result = await findTool(tools, "delete_old_events").execute({});
+
+  assert.deepEqual(deleted, ["past-timed"]);
+  assert.deepEqual(deleteAttempts, ["past-timed"]);
   assert.equal(result, '{"deleted":1,"skipped":1}');
 });
 

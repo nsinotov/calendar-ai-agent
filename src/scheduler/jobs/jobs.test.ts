@@ -28,23 +28,25 @@ function setup() {
 // English needs no translation, so the LLM is never called.
 const noLlm = {} as LlmProvider;
 
-function timed(id: string, title: string, start: string, minutes = 30): CalendarEvent {
+function timed(id: string, title: string, start: string, minutes = 30, eventType?: string): CalendarEvent {
   const end = new Date(Date.parse(start) + minutes * 60_000).toISOString();
 
-  return { id, title, start: { allDay: false, value: start }, end: { allDay: false, value: end }, status: "confirmed" };
+  return { id, title, start: { allDay: false, value: start }, end: { allDay: false, value: end }, status: "confirmed", eventType };
 }
 
 function fakeCalendar(
   events: CalendarEvent[],
   options: { undeletable?: string[] } = {},
-): CalendarProvider & { listCalls: ListEventsOptions[]; deleted: string[] } {
+): CalendarProvider & { listCalls: ListEventsOptions[]; deleted: string[]; deleteAttempts: string[] } {
   const listCalls: ListEventsOptions[] = [];
   const deleted: string[] = [];
+  const deleteAttempts: string[] = [];
   const undeletable = options.undeletable ?? [];
 
   return {
     listCalls,
     deleted,
+    deleteAttempts,
     listEvents: async (options) => {
       listCalls.push(options);
 
@@ -53,11 +55,13 @@ function fakeCalendar(
     createEvent: async () => events[0]!,
     updateEvent: async () => events[0]!,
     deleteEvent: async (id) => {
+      deleteAttempts.push(id);
       if (undeletable.includes(id)) {
         throw new Error("not valid for this event type");
       }
       deleted.push(id);
     },
+    canDelete: (event) => event.eventType !== "birthday",
   };
 }
 
@@ -295,6 +299,20 @@ test("cleanup skips an event the provider refuses to delete, deletes the rest, a
   // Only one listEvents call (the second run was skipped) confirms the day was marked done
   // despite the first event's deletion failing.
   assert.equal(calendar.listCalls.length, 1);
+});
+
+test("cleanup skips a known non-deletable eventType without even attempting the call", async () => {
+  const deps = setup();
+  const settings = { ...english(deps.settingsStore.get(1)), oldEventsAction: "delete" as const, oldEventsRetentionDays: 30 };
+  const birthday = timed("birthday", "Birthday", "2026-08-01T10:00:00Z", 30, "birthday");
+  const old = timed("old", "Old", "2026-08-02T10:00:00Z");
+  const calendar = fakeCalendar([birthday, old]);
+  const job = createCleanupJob({ sent: deps.sent, reminders: deps.reminders });
+
+  await job.run(context(calendar, settings, "2026-09-25T03:10:00Z"));
+
+  assert.deepEqual(calendar.deleted, ["old"]);
+  assert.deepEqual(calendar.deleteAttempts, ["old"]);
 });
 
 test("cleanup with the keep policy deletes nothing", async () => {

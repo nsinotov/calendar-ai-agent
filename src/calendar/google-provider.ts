@@ -3,6 +3,10 @@ import type { calendar_v3 } from "googleapis";
 import { CalendarError } from "./errors.js";
 import type { CalendarEvent, CalendarProvider, EventInput, EventTime, ListEventsOptions } from "./types.js";
 
+// Auto-generated from Google Contacts; the Calendar API rejects deleting them directly.
+const NON_DELETABLE_EVENT_TYPES: readonly string[] = ["birthday"];
+const NON_DELETABLE_EVENT_TYPE_MESSAGE = "is not valid for this event type";
+
 export class GoogleCalendarProvider implements CalendarProvider {
   constructor(
     private readonly client: calendar_v3.Calendar,
@@ -59,6 +63,10 @@ export class GoogleCalendarProvider implements CalendarProvider {
       throw toCalendarError(error);
     }
   }
+
+  canDelete(event: CalendarEvent): boolean {
+    return !event.eventType || !NON_DELETABLE_EVENT_TYPES.includes(event.eventType);
+  }
 }
 
 function fromGoogleEvent(event: calendar_v3.Schema$Event): CalendarEvent {
@@ -70,6 +78,7 @@ function fromGoogleEvent(event: calendar_v3.Schema$Event): CalendarEvent {
     start: fromGoogleEventTime(event.start),
     end: fromGoogleEventTime(event.end),
     status: toEventStatus(event.status),
+    eventType: event.eventType && event.eventType !== "default" ? event.eventType : undefined,
   };
 }
 
@@ -118,6 +127,13 @@ function toCalendarError(error: unknown): CalendarError {
         if (error.status !== undefined && error.status >= 500) {
           return new CalendarError("unavailable", error.message, { cause: error });
         }
+    }
+    if (error.message.includes(NON_DELETABLE_EVENT_TYPE_MESSAGE)) {
+      return new CalendarError(
+        "unknown",
+        "This event can't be deleted through the Calendar API (e.g. a birthday synced from Google Contacts). Remove or edit it in Google Contacts, or hide birthdays in Calendar settings, instead.",
+        { cause: error },
+      );
     }
   }
   if (error instanceof CalendarError) {

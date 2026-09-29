@@ -30,12 +30,13 @@ export function createCleanupJob(deps: CleanupJobDeps): Job {
       if (settings.oldEventsAction === "delete") {
         const cutoff = new Date(now.getTime() - settings.oldEventsRetentionDays * DAY_MS);
         const events = await calendar.listEvents({ timeMax: cutoff.toISOString() });
-        for (const event of events.filter((candidate) => hasEnded(candidate, cutoff, settings.timezone))) {
+        const old = events.filter((candidate) => hasEnded(candidate, cutoff, settings.timezone) && calendar.canDelete(candidate));
+        for (const event of old) {
           try {
             await calendar.deleteEvent(event.id);
           } catch {
-            // Some events (e.g. Google's auto-generated birthday events) reject deletion; don't let
-            // one keep this job retrying (and re-alerting admins) for the rest of the day's window.
+            // A type we don't know about yet also rejected deletion; don't let it keep this job
+            // retrying (and re-alerting admins) for the rest of the day's window.
           }
         }
       }

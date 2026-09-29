@@ -4,7 +4,7 @@ import { GaxiosError } from "gaxios";
 import type { calendar_v3 } from "googleapis";
 import { CalendarError } from "./errors.js";
 import { GoogleCalendarProvider } from "./google-provider.js";
-import type { EventInput } from "./types.js";
+import type { CalendarEvent, EventInput } from "./types.js";
 
 function fakeClient(overrides: Partial<calendar_v3.Calendar["events"]>): calendar_v3.Calendar {
   return { events: overrides } as unknown as calendar_v3.Calendar;
@@ -61,6 +61,7 @@ test("listEvents() converts timed and all-day events", async () => {
       start: { allDay: false, value: "2026-09-22T10:00:00+03:00" },
       end: { allDay: false, value: "2026-09-22T10:30:00+03:00" },
       status: "confirmed",
+      eventType: undefined,
     },
     {
       id: "e2",
@@ -70,6 +71,7 @@ test("listEvents() converts timed and all-day events", async () => {
       start: { allDay: true, value: "2026-09-23" },
       end: { allDay: true, value: "2026-09-24" },
       status: "tentative",
+      eventType: undefined,
     },
   ]);
   assert.deepEqual(sentParams, {
@@ -79,6 +81,39 @@ test("listEvents() converts timed and all-day events", async () => {
     singleEvents: true,
     orderBy: "startTime",
   });
+});
+
+test("listEvents() surfaces a non-default eventType but normalizes \"default\" to undefined", async () => {
+  const client = fakeClient({
+    list: (async () => ({
+      data: {
+        items: [
+          {
+            id: "e1",
+            summary: "Someone's birthday",
+            start: { date: "2026-09-22" },
+            end: { date: "2026-09-23" },
+            status: "confirmed",
+            eventType: "birthday",
+          },
+          {
+            id: "e2",
+            summary: "Standup",
+            start: { dateTime: "2026-09-22T10:00:00+03:00" },
+            end: { dateTime: "2026-09-22T10:30:00+03:00" },
+            status: "confirmed",
+            eventType: "default",
+          },
+        ],
+      },
+    })) as calendar_v3.Calendar["events"]["list"],
+  });
+  const provider = new GoogleCalendarProvider(client, "primary");
+
+  const events = await provider.listEvents({});
+
+  assert.equal(events[0]?.eventType, "birthday");
+  assert.equal(events[1]?.eventType, undefined);
 });
 
 test("createEvent() sends only the given fields and converts the result", async () => {
@@ -152,6 +187,38 @@ test("deleteEvent() calls delete with the calendar and event id", async () => {
   await provider.deleteEvent("e1");
 
   assert.deepEqual(sentParams, { calendarId: "primary", eventId: "e1" });
+});
+
+test("canDelete() is false only for a known non-deletable eventType", () => {
+  const provider = new GoogleCalendarProvider({} as calendar_v3.Calendar, "primary");
+  const event = (eventType?: string): CalendarEvent => ({
+    id: "e1",
+    title: "x",
+    start: { allDay: true, value: "2026-09-22" },
+    end: { allDay: true, value: "2026-09-23" },
+    status: "confirmed",
+    eventType,
+  });
+
+  assert.equal(provider.canDelete(event()), true);
+  assert.equal(provider.canDelete(event("outOfOffice")), true);
+  assert.equal(provider.canDelete(event("birthday")), false);
+});
+
+test("deleteEvent() gives a clear, actionable message for a non-deletable event type", async () => {
+  const client = fakeClient({
+    delete: (async () => {
+      throw fakeGaxiosError(400, "Attempt made to modify 'birthday' event in a way that is not valid for this event type.");
+    }) as unknown as calendar_v3.Calendar["events"]["delete"],
+  });
+  const provider = new GoogleCalendarProvider(client, "primary");
+
+  await assert.rejects(provider.deleteEvent("e1"), (error: unknown) => {
+    assert.ok(error instanceof CalendarError);
+    assert.match(error.message, /Google Contacts/);
+
+    return true;
+  });
 });
 
 test("maps Gaxios error statuses to CalendarError kinds", async () => {

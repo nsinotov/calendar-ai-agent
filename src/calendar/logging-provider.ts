@@ -40,6 +40,10 @@ export class LoggingCalendarProvider implements CalendarProvider {
     return this.run("calendar.deleteEvent", () => this.inner.deleteEvent(id), () => ({ id }));
   }
 
+  canDelete(event: CalendarEvent): boolean {
+    return this.inner.canDelete(event);
+  }
+
   private async run<T>(
     label: string,
     action: () => Promise<T>,
