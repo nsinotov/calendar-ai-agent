@@ -34,9 +34,13 @@ function timed(id: string, title: string, start: string, minutes = 30): Calendar
   return { id, title, start: { allDay: false, value: start }, end: { allDay: false, value: end }, status: "confirmed" };
 }
 
-function fakeCalendar(events: CalendarEvent[]): CalendarProvider & { listCalls: ListEventsOptions[]; deleted: string[] } {
+function fakeCalendar(
+  events: CalendarEvent[],
+  options: { undeletable?: string[] } = {},
+): CalendarProvider & { listCalls: ListEventsOptions[]; deleted: string[] } {
   const listCalls: ListEventsOptions[] = [];
   const deleted: string[] = [];
+  const undeletable = options.undeletable ?? [];
 
   return {
     listCalls,
@@ -48,7 +52,12 @@ function fakeCalendar(events: CalendarEvent[]): CalendarProvider & { listCalls: 
     },
     createEvent: async () => events[0]!,
     updateEvent: async () => events[0]!,
-    deleteEvent: async (id) => void deleted.push(id),
+    deleteEvent: async (id) => {
+      if (undeletable.includes(id)) {
+        throw new Error("not valid for this event type");
+      }
+      deleted.push(id);
+    },
   };
 }
 
@@ -269,6 +278,23 @@ test("cleanup deletes only events that ended before the retention period, once a
   await job.run(context(calendar, settings, "2026-09-25T04:00:00Z"));
 
   assert.deepEqual(calendar.deleted, ["old"]);
+});
+
+test("cleanup skips an event the provider refuses to delete, deletes the rest, and still marks the day done", async () => {
+  const deps = setup();
+  const settings = { ...english(deps.settingsStore.get(1)), oldEventsAction: "delete" as const, oldEventsRetentionDays: 30 };
+  const birthday = timed("birthday", "Birthday", "2026-08-01T10:00:00Z");
+  const old = timed("old", "Old", "2026-08-02T10:00:00Z");
+  const calendar = fakeCalendar([birthday, old], { undeletable: ["birthday"] });
+  const job = createCleanupJob({ sent: deps.sent, reminders: deps.reminders });
+
+  await job.run(context(calendar, settings, "2026-09-25T03:10:00Z"));
+  await job.run(context(calendar, settings, "2026-09-25T04:00:00Z"));
+
+  assert.deepEqual(calendar.deleted, ["old"]);
+  // Only one listEvents call (the second run was skipped) confirms the day was marked done
+  // despite the first event's deletion failing.
+  assert.equal(calendar.listCalls.length, 1);
 });
 
 test("cleanup with the keep policy deletes nothing", async () => {
