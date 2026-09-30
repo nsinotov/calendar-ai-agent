@@ -81,7 +81,7 @@ function toOpenAiMessages(message: Message): ChatCompletionMessageParam[] {
   return [
     {
       role: "assistant",
-      content: text || null,
+      content: text || (toolCalls.length ? null : ""),
       tool_calls: toolCalls.length
         ? toolCalls.map((call) => ({
             id: call.id,

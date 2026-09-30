@@ -65,6 +65,34 @@ test("complete() converts messages, tools and the response", async () => {
   });
 });
 
+test("complete() sends an empty string, not null, for an assistant message with no text and no tool calls", async () => {
+  let sentParams: unknown;
+  const client = fakeClient((params) => {
+    sentParams = params;
+
+    return {
+      choices: [{ message: { content: "ok" }, finish_reason: "stop" }],
+      usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+    };
+  });
+  const provider = new OpenAiProvider(client, { model: "gpt-5.1", maxTokens: 100 });
+
+  await provider.complete({
+    system: "sys",
+    messages: [
+      { role: "user", content: "hi" },
+      { role: "assistant", content: [] },
+    ],
+    tools: [],
+  });
+
+  assert.deepEqual((sentParams as { messages: unknown[] }).messages[2], {
+    role: "assistant",
+    content: "",
+    tool_calls: undefined,
+  });
+});
+
 test("complete() maps SDK errors to LlmError kinds, including the quota/rate-limit split", async () => {
   const headers = new Headers();
   const cases: [string, Error, string][] = [
