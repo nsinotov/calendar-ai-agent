@@ -221,6 +221,23 @@ test("deleteEvent() gives a clear, actionable message for a non-deletable event 
   });
 });
 
+test("a revoked refresh token becomes an auth error with a clear message", async () => {
+  const client = fakeClient({
+    list: (async () => {
+      throw new Error("invalid_grant");
+    }) as calendar_v3.Calendar["events"]["list"],
+  });
+  const provider = new GoogleCalendarProvider(client, "primary");
+
+  await assert.rejects(provider.listEvents({}), (error: unknown) => {
+    assert.ok(error instanceof CalendarError);
+    assert.equal(error.kind, "auth");
+    assert.match(error.message, /authorize Google Calendar again/);
+
+    return true;
+  });
+});
+
 test("maps Gaxios error statuses to CalendarError kinds", async () => {
   const cases: [number, string][] = [
     [401, "auth"],

@@ -49,7 +49,7 @@ test("a failing job is logged and the other jobs and users still run", async () 
 
   assert.deepEqual(seen, ["ok1", "ok2"]);
   assert.equal(errors.length, 2);
-  assert.equal(errors[0]!.kind, "failing");
+  assert.equal(errors[0]!.job, "failing");
 });
 
 test("a user whose calendar cannot be built is logged and skipped", async () => {
@@ -69,7 +69,7 @@ test("a user whose calendar cannot be built is logged and skipped", async () => 
   await scheduler.tick();
 
   assert.deepEqual(seen, ["j2"]);
-  assert.equal(errors[0]!.kind, "setup");
+  assert.equal(errors[0]!.job, "setup");
 });
 
 test("overlapping ticks do not run the jobs twice", async () => {

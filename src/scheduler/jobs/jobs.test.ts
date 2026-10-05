@@ -315,6 +315,26 @@ test("cleanup skips a known non-deletable eventType without even attempting the 
   assert.deepEqual(calendar.deleteAttempts, ["old"]);
 });
 
+test("a failing calendar fetch is retried once per poll interval, not on every tick", async () => {
+  const deps = setup();
+  const settings = english(deps.settingsStore.get(1));
+  let attempts = 0;
+  const calendar: CalendarProvider = {
+    ...fakeCalendar([]),
+    listEvents: async () => {
+      attempts++;
+      throw new Error("invalid_grant");
+    },
+  };
+  const job = reminderJob(deps);
+
+  await job.run(context(calendar, settings, "2026-09-25T08:00:00Z")).catch(() => {});
+  await job.run(context(calendar, settings, "2026-09-25T08:05:00Z")).catch(() => {});
+  await job.run(context(calendar, settings, "2026-09-25T08:16:00Z")).catch(() => {});
+
+  assert.equal(attempts, 2);
+});
+
 test("cleanup with the keep policy deletes nothing", async () => {
   const deps = setup();
   const calendar = fakeCalendar([timed("old", "Old", "2026-01-01T10:00:00Z")]);

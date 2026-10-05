@@ -35,10 +35,16 @@ export function createEventReminderJob(deps: EventReminderJobDeps): Job {
       const nowMs = now.getTime();
       let cached = cache.get(userId);
       if (!cached || nowMs - cached.fetchedAt >= pollMs) {
-        const events = await calendar.listEvents({
-          timeMin: now.toISOString(),
-          timeMax: new Date(nowMs + LOOKAHEAD_MS).toISOString(),
-        });
+        let events;
+        try {
+          events = await calendar.listEvents({
+            timeMin: now.toISOString(),
+            timeMax: new Date(nowMs + LOOKAHEAD_MS).toISOString(),
+          });
+        } catch (error) {
+          cache.set(userId, { fetchedAt: nowMs, events: cached?.events ?? [] });
+          throw error;
+        }
         cached = { fetchedAt: nowMs, events: events.filter((event) => !event.start.allDay && event.status !== "cancelled") };
         cache.set(userId, cached);
         for (const event of cached.events) {

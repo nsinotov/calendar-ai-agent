@@ -1,4 +1,4 @@
-import type { CalendarProvider } from "../calendar/index.js";
+import { CalendarError, type CalendarProvider } from "../calendar/index.js";
 import type { Logger } from "../logging/index.js";
 import type { UserSettingsStore } from "../memory/user-settings-store.js";
 import type { UserStore } from "../memory/user-store.js";
@@ -61,7 +61,7 @@ export class Scheduler {
       }
       context = { userId, settings: this.deps.settings.get(userId), calendar, now };
     } catch (error) {
-      this.logJobError("setup", error);
+      this.logJobError(userId, "setup", error);
 
       return;
     }
@@ -70,13 +70,18 @@ export class Scheduler {
       try {
         await job.run(context);
       } catch (error) {
-        this.logJobError(job.name, error);
+        this.logJobError(userId, job.name, error);
       }
     }
   }
 
-  private logJobError(job: string, error: unknown): void {
-    this.deps.logger.error("scheduler.job", { kind: job, message: error instanceof Error ? error.message : String(error) });
+  private logJobError(userId: number, job: string, error: unknown): void {
+    this.deps.logger.error("scheduler.job", {
+      userId,
+      job,
+      kind: error instanceof CalendarError ? error.kind : "unknown",
+      message: error instanceof Error ? error.message : String(error),
+    });
   }
 }
 

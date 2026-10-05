@@ -6,6 +6,7 @@ import type { CalendarEvent, CalendarProvider, EventInput, EventTime, ListEvents
 // Auto-generated from Google Contacts; the Calendar API rejects deleting them directly.
 const NON_DELETABLE_EVENT_TYPES: readonly string[] = ["birthday"];
 const NON_DELETABLE_EVENT_TYPE_MESSAGE = "is not valid for this event type";
+const REVOKED_ACCESS_MESSAGE = "invalid_grant";
 
 export class GoogleCalendarProvider implements CalendarProvider {
   constructor(
@@ -114,6 +115,13 @@ function toGoogleEventTime(time: EventTime): calendar_v3.Schema$EventDateTime {
 }
 
 function toCalendarError(error: unknown): CalendarError {
+  if (error instanceof Error && error.message.includes(REVOKED_ACCESS_MESSAGE)) {
+    return new CalendarError(
+      "auth",
+      "Google access for this user was revoked or expired (e.g. after a password change). The user must authorize Google Calendar again.",
+      { cause: error },
+    );
+  }
   if (error instanceof GaxiosError) {
     switch (error.status) {
       case 401:
