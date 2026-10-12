@@ -21,11 +21,12 @@ services:
       - agent
     environment:
       DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-${DOMAIN}}
       PORT: ${PORT:-3000}
       PRIVACY_CONTACT_EMAIL: ${PRIVACY_CONTACT_EMAIL:?Set PRIVACY_CONTACT_EMAIL in .env}
     ports:
-      - "80:80"
-      - "443:443"
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./site/index.html:/srv/index.html:ro

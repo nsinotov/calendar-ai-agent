@@ -1,4 +1,4 @@
-{$DOMAIN} {
+{$SITE_ADDRESS} {
 	reverse_proxy /telegram agent:{$PORT:3000}
 
 	# Homepage and privacy policy for the Google OAuth consent screen

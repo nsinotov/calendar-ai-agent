@@ -86,6 +86,18 @@ Telegram webhook behind Caddy (automatic HTTPS): point a domain at the server, s
 docker compose --profile webhook up -d --build
 ```
 
+### Behind an existing reverse proxy
+
+If another proxy (e.g. host nginx) already owns ports 80/443 and handles TLS, run Caddy on plain HTTP on a local port by setting this in `.env`:
+
+```bash
+CADDY_HTTP_PORT=127.0.0.1:8080
+CADDY_HTTPS_PORT=127.0.0.1:8443
+CADDY_SITE_ADDRESS=http://bot.example.com
+```
+
+Then point the proxy for `DOMAIN` at `http://127.0.0.1:8080`, keeping the `Host` header.
+
 The database lives in the `agent-data` volume. The admin scripts run inside the container:
 
 ```bash
