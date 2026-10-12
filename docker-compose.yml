@@ -22,11 +22,15 @@ services:
     environment:
       DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
       PORT: ${PORT:-3000}
+      PRIVACY_CONTACT_EMAIL: ${PRIVACY_CONTACT_EMAIL:?Set PRIVACY_CONTACT_EMAIL in .env}
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./site/index.html:/srv/index.html:ro
+      - ./site/privacy.html:/srv/privacy.html:ro
+      - ./PRIVACY.md:/srv/PRIVACY.md:ro
       - caddy-data:/data
       - caddy-config:/config
 
