@@ -39,4 +39,3 @@ export class CompositeLogger implements Logger {
     }
   }
 }
-

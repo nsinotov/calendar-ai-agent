@@ -31,9 +31,18 @@ export function createSummaryJob(deps: SummaryJobDeps): Job {
 
       // On the week's first day the weekly summary already lists today, so skip the daily one if they're due at the same time.
       const supersededByWeekly =
-        !weekly && local.weekday === settings.weekStart && settings.weeklyReminderEnabled && settings.weeklyReminderTime === settings.dailyReminderTime;
+        !weekly &&
+        local.weekday === settings.weekStart &&
+        settings.weeklyReminderEnabled &&
+        settings.weeklyReminderTime === settings.dailyReminderTime;
 
-      if (!enabled || (weekly && local.weekday !== settings.weekStart) || supersededByWeekly || !inWindow(local, time, GRACE_MINUTES) || deps.sent.has(userId, key)) {
+      if (
+        !enabled ||
+        (weekly && local.weekday !== settings.weekStart) ||
+        supersededByWeekly ||
+        !inWindow(local, time, GRACE_MINUTES) ||
+        deps.sent.has(userId, key)
+      ) {
         return;
       }
 
@@ -48,7 +57,9 @@ export function createSummaryJob(deps: SummaryJobDeps): Job {
         return;
       }
 
-      const draft = weekly ? formatWeeklySummary(events, settings.timezone) : formatDailySummary(events, settings.timezone);
+      const draft = weekly
+        ? formatWeeklySummary(events, settings.timezone)
+        : formatDailySummary(events, settings.timezone);
       const parts = [await translate(deps.llm, settings.language, draft)];
       if (deps.suggestions) {
         parts.push(...(await deps.suggestions(context).catch(() => [])));
@@ -59,4 +70,3 @@ export function createSummaryJob(deps: SummaryJobDeps): Job {
     },
   };
 }
-

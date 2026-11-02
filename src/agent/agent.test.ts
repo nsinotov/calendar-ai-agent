@@ -47,7 +47,10 @@ test("reply() returns the text when the model answers without tools", async () =
   const { llm } = scriptedLlm([{ content: [{ type: "text", text: "Hello" }], stopReason: "end_turn", usage }]);
   const agent = new Agent(llm, testConversations());
 
-  assert.equal(await agent.reply(1, "hi", { system: "s", tools: [], retentionDays: 7, toolResultRetentionMinutes: 60 }), "Hello");
+  assert.equal(
+    await agent.reply(1, "hi", { system: "s", tools: [], retentionDays: 7, toolResultRetentionMinutes: 60 }),
+    "Hello",
+  );
 });
 
 test("reply() runs requested tools, feeds results back and returns the final text", async () => {
@@ -62,7 +65,10 @@ test("reply() runs requested tools, feeds results back and returns the final tex
   ]);
   const agent = new Agent(llm, conversations);
 
-  assert.equal(await agent.reply(1, "go", { system: "s", tools: [echoTool], retentionDays: 7, toolResultRetentionMinutes: 60 }), "Done");
+  assert.equal(
+    await agent.reply(1, "go", { system: "s", tools: [echoTool], retentionDays: 7, toolResultRetentionMinutes: 60 }),
+    "Done",
+  );
   assert.deepEqual(requests[1]?.messages.at(-1), {
     role: "user",
     content: [{ type: "tool_result", callId: "c1", content: '{"echoed":"x"}' }],
@@ -108,4 +114,3 @@ test("reply() gives up after the step limit", async () => {
     /did not finish/,
   );
 });
-

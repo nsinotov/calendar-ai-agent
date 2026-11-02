@@ -61,7 +61,12 @@ test("complete() converts messages, tools and the response", async () => {
       },
       { role: "tool", tool_call_id: "t0", content: "ok" },
     ],
-    tools: [{ type: "function", function: { name: "list_events", description: "d", parameters: { type: "object", properties: {} } } }],
+    tools: [
+      {
+        type: "function",
+        function: { name: "list_events", description: "d", parameters: { type: "object", properties: {} } },
+      },
+    ],
   });
 });
 
@@ -98,7 +103,12 @@ test("complete() maps SDK errors to LlmError kinds, including the quota/rate-lim
   const cases: [string, Error, string][] = [
     [
       "insufficient quota",
-      new OpenAI.RateLimitError(429, { message: "You exceeded your current quota", code: "insufficient_quota" }, undefined, headers),
+      new OpenAI.RateLimitError(
+        429,
+        { message: "You exceeded your current quota", code: "insufficient_quota" },
+        undefined,
+        headers,
+      ),
       "insufficient_credits",
     ],
     [
@@ -115,15 +125,11 @@ test("complete() maps SDK errors to LlmError kinds, including the quota/rate-lim
     });
     const provider = new OpenAiProvider(client, { model: "m", maxTokens: 1 });
 
-    await assert.rejects(
-      provider.complete({ system: "", messages: [], tools: [] }),
-      (error: unknown) => {
-        assert.ok(error instanceof LlmError, `${label}: expected an LlmError`);
-        assert.equal(error.kind, expectedKind, label);
+    await assert.rejects(provider.complete({ system: "", messages: [], tools: [] }), (error: unknown) => {
+      assert.ok(error instanceof LlmError, `${label}: expected an LlmError`);
+      assert.equal(error.kind, expectedKind, label);
 
-        return true;
-      },
-    );
+      return true;
+    });
   }
 });
-

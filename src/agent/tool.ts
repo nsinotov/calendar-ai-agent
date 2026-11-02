@@ -11,7 +11,7 @@ export interface Tool {
 export function defineTool<T>(
   definition: ToolDefinition,
   schema: z.ZodType<T, z.ZodTypeDef, unknown>,
-  run: (args: T) => Promise<unknown> | unknown,
+  run: (args: T) => unknown,
 ): Tool {
   return {
     definition,
@@ -29,4 +29,3 @@ export function defineTool<T>(
 function formatIssues(error: z.ZodError): string {
   return error.issues.map((issue) => `${issue.path.join(".") || "input"}: ${issue.message}`).join("; ");
 }
-

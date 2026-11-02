@@ -16,4 +16,3 @@ export function splitMessage(text: string, limit: number): string[] {
 
   return chunks;
 }
-

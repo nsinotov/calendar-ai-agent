@@ -46,4 +46,3 @@ test("google with complete credentials creates a provider", () => {
 
   assert.equal(typeof provider.listEvents, "function");
 });
-

@@ -60,4 +60,3 @@ test("one user's secrets are never visible to another user", () => {
   assert.deepEqual(store.listProviders(1, "calendar"), ["google"]);
   assert.deepEqual(store.listProviders(2, "calendar"), ["google"]);
 });
-

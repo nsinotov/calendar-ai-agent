@@ -18,8 +18,7 @@ interface MessageRow {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MINUTE_MS = 60 * 1000;
-const STALE_TOOL_RESULT_NOTICE =
-  "[Tool result expired from context; call the tool again if you still need this data.]";
+const STALE_TOOL_RESULT_NOTICE = "[Tool result expired from context; call the tool again if you still need this data.]";
 // No caller-supplied limit means tool results never go stale.
 const DEFAULT_TOOL_RESULT_RETENTION_MINUTES = Infinity;
 
@@ -32,7 +31,11 @@ export class SqliteConversationStore implements ConversationStore {
       .run(userId, message.role, JSON.stringify(message.content), Date.now());
   }
 
-  load(userId: number, retentionDays: number, toolResultRetentionMinutes = DEFAULT_TOOL_RESULT_RETENTION_MINUTES): Message[] {
+  load(
+    userId: number,
+    retentionDays: number,
+    toolResultRetentionMinutes = DEFAULT_TOOL_RESULT_RETENTION_MINUTES,
+  ): Message[] {
     this.purgeExpired(userId, retentionDays);
     const rows = this.db
       .prepare("SELECT role, content, created_at FROM messages WHERE telegram_user_id = ? ORDER BY id")
@@ -40,12 +43,13 @@ export class SqliteConversationStore implements ConversationStore {
 
     const staleCutoff = Date.now() - toolResultRetentionMinutes * MINUTE_MS;
     // Content is written by append(), so it always matches the Message type.
-    const messages = rows.map(
-      (row): Message => ({
-        role: row.role,
-        content: withStaleToolResultsRedacted(JSON.parse(row.content) as Message["content"], row.created_at < staleCutoff),
-      }),
-    );
+    const messages = rows.map((row): Message => ({
+      role: row.role,
+      content: withStaleToolResultsRedacted(
+        JSON.parse(row.content) as Message["content"],
+        row.created_at < staleCutoff,
+      ),
+    }));
 
     return dropUntilUserText(messages);
   }
@@ -56,9 +60,7 @@ export class SqliteConversationStore implements ConversationStore {
 
   private purgeExpired(userId: number, retentionDays: number): void {
     const cutoff = Date.now() - retentionDays * DAY_MS;
-    this.db
-      .prepare("DELETE FROM messages WHERE telegram_user_id = ? AND created_at < ?")
-      .run(userId, cutoff);
+    this.db.prepare("DELETE FROM messages WHERE telegram_user_id = ? AND created_at < ?").run(userId, cutoff);
   }
 }
 
@@ -67,16 +69,15 @@ function withStaleToolResultsRedacted(content: Message["content"], isStale: bool
     return content;
   }
 
-  return content.map((block) => (block.type === "tool_result" ? { ...block, content: STALE_TOOL_RESULT_NOTICE } : block));
+  return content.map((block) =>
+    block.type === "tool_result" ? { ...block, content: STALE_TOOL_RESULT_NOTICE } : block,
+  );
 }
 
 // Purging can cut a tool call from its result. Claude requires history to start
 // with a plain user message, so drop everything before the first one.
 function dropUntilUserText(messages: Message[]): Message[] {
-  const start = messages.findIndex(
-    (message) => message.role === "user" && typeof message.content === "string",
-  );
+  const start = messages.findIndex((message) => message.role === "user" && typeof message.content === "string");
 
   return start === -1 ? [] : messages.slice(start);
 }
-

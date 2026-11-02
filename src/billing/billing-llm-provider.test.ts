@@ -25,7 +25,10 @@ test("a successful call is recorded and returned unchanged", async () => {
   const { billing, events } = fakeBilling();
   const inner: LlmProvider = { complete: async () => response };
 
-  assert.equal(await new BillingLlmProvider(inner, billing).complete({ system: "", messages: [], tools: [] }), response);
+  assert.equal(
+    await new BillingLlmProvider(inner, billing).complete({ system: "", messages: [], tools: [] }),
+    response,
+  );
   assert.deepEqual(events, ["success"]);
 });
 
@@ -37,7 +40,9 @@ test("a failure is recorded and rethrown", async () => {
     },
   };
 
-  await assert.rejects(new BillingLlmProvider(inner, billing).complete({ system: "", messages: [], tools: [] }), /no credits/);
+  await assert.rejects(
+    new BillingLlmProvider(inner, billing).complete({ system: "", messages: [], tools: [] }),
+    /no credits/,
+  );
   assert.deepEqual(events, ["failure"]);
 });
-

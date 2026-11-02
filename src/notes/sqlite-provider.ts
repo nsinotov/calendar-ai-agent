@@ -39,9 +39,7 @@ export class SqliteNotesProvider implements NotesProvider {
   }
 
   remove(userId: number, noteId: number): boolean {
-    const result = this.db
-      .prepare("DELETE FROM notes WHERE telegram_user_id = ? AND id = ?")
-      .run(userId, noteId);
+    const result = this.db.prepare("DELETE FROM notes WHERE telegram_user_id = ? AND id = ?").run(userId, noteId);
 
     return result.changes > 0;
   }
@@ -60,4 +58,3 @@ function toNote(row: NoteRow): Note {
 function likePattern(query: string): string {
   return `%${query.replace(/[\\%_]/g, "\\$&")}%`;
 }
-

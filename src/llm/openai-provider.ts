@@ -1,8 +1,5 @@
 import OpenAI from "openai";
-import type {
-  ChatCompletionMessageParam,
-  ChatCompletionTool,
-} from "openai/resources/chat/completions/completions";
+import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions/completions";
 import { LlmError } from "./errors.js";
 import type {
   ContentBlock,
@@ -30,10 +27,7 @@ export class OpenAiProvider implements LlmProvider {
       const response = await this.client.chat.completions.create({
         model: this.options.model,
         max_completion_tokens: this.options.maxTokens,
-        messages: [
-          { role: "system", content: request.system },
-          ...request.messages.flatMap(toOpenAiMessages),
-        ],
+        messages: [{ role: "system", content: request.system }, ...request.messages.flatMap(toOpenAiMessages)],
         tools: request.tools.length ? request.tools.map(toOpenAiTool) : undefined,
       });
       return fromOpenAiResponse(response);
@@ -52,8 +46,7 @@ function toOpenAiMessages(message: Message): ChatCompletionMessageParam[] {
 
   if (message.role === "user") {
     const results = message.content.filter(
-      (block): block is Extract<ContentBlock, { type: "tool_result" }> =>
-        block.type === "tool_result",
+      (block): block is Extract<ContentBlock, { type: "tool_result" }> => block.type === "tool_result",
     );
     if (results.length) {
       return results.map((block) => ({
@@ -184,4 +177,3 @@ function toLlmError(error: unknown): LlmError {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
-

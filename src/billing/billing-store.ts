@@ -46,16 +46,19 @@ export class SqliteBillingStore implements BillingStore {
 
   deduct(usd: number): void {
     this.db
-      .prepare("UPDATE llm_billing SET balance_usd = balance_usd - ?, updated_at = ? WHERE id = 1 AND balance_usd IS NOT NULL")
+      .prepare(
+        "UPDATE llm_billing SET balance_usd = balance_usd - ?, updated_at = ? WHERE id = 1 AND balance_usd IS NOT NULL",
+      )
       .run(usd, Date.now());
   }
 
   setLowNotified(value: boolean): void {
-    this.db.prepare("UPDATE llm_billing SET low_notified = ?, updated_at = ? WHERE id = 1").run(value ? 1 : 0, Date.now());
+    this.db
+      .prepare("UPDATE llm_billing SET low_notified = ?, updated_at = ? WHERE id = 1")
+      .run(value ? 1 : 0, Date.now());
   }
 
   setOutage(value: boolean): void {
     this.db.prepare("UPDATE llm_billing SET outage = ?, updated_at = ? WHERE id = 1").run(value ? 1 : 0, Date.now());
   }
 }
-

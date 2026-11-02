@@ -56,4 +56,3 @@ export class SqlitePreferencesStore implements PreferencesStore {
     return result.changes > 0;
   }
 }
-

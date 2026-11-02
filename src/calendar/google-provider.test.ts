@@ -11,13 +11,17 @@ function fakeClient(overrides: Partial<calendar_v3.Calendar["events"]>): calenda
 }
 
 function fakeGaxiosError(status: number, message = "error"): GaxiosError {
-  return new GaxiosError(message, {} as never, {
-    status,
-    statusText: message,
-    data: {},
-    headers: {},
-    config: {} as never,
-  } as never);
+  return new GaxiosError(
+    message,
+    {} as never,
+    {
+      status,
+      statusText: message,
+      data: {},
+      headers: {},
+      config: {} as never,
+    } as never,
+  );
 }
 
 test("listEvents() converts timed and all-day events", async () => {
@@ -83,7 +87,7 @@ test("listEvents() converts timed and all-day events", async () => {
   });
 });
 
-test("listEvents() surfaces a non-default eventType but normalizes \"default\" to undefined", async () => {
+test('listEvents() surfaces a non-default eventType but normalizes "default" to undefined', async () => {
   const client = fakeClient({
     list: (async () => ({
       data: {
@@ -160,7 +164,13 @@ test("updateEvent() only sends the fields that were set (PATCH semantics)", asyn
       sentParams = params;
 
       return {
-        data: { id: "e1", summary: "Doctor (moved)", start: { dateTime: "2026-10-01T11:00:00+03:00" }, end: { dateTime: "2026-10-01T11:30:00+03:00" }, status: "confirmed" },
+        data: {
+          id: "e1",
+          summary: "Doctor (moved)",
+          start: { dateTime: "2026-10-01T11:00:00+03:00" },
+          end: { dateTime: "2026-10-01T11:30:00+03:00" },
+          status: "confirmed",
+        },
       };
     }) as calendar_v3.Calendar["events"]["patch"],
   });
@@ -207,9 +217,12 @@ test("canDelete() is false only for a known non-deletable eventType", () => {
 
 test("deleteEvent() gives a clear, actionable message for a non-deletable event type", async () => {
   const client = fakeClient({
-    delete: (async () => {
-      throw fakeGaxiosError(400, "Attempt made to modify 'birthday' event in a way that is not valid for this event type.");
-    }) as unknown as calendar_v3.Calendar["events"]["delete"],
+    delete: async () => {
+      throw fakeGaxiosError(
+        400,
+        "Attempt made to modify 'birthday' event in a way that is not valid for this event type.",
+      );
+    },
   });
   const provider = new GoogleCalendarProvider(client, "primary");
 
@@ -223,9 +236,9 @@ test("deleteEvent() gives a clear, actionable message for a non-deletable event 
 
 test("a revoked refresh token becomes an auth error with a clear message", async () => {
   const client = fakeClient({
-    list: (async () => {
+    list: async () => {
       throw new Error("invalid_grant");
-    }) as calendar_v3.Calendar["events"]["list"],
+    },
   });
   const provider = new GoogleCalendarProvider(client, "primary");
 
@@ -250,21 +263,17 @@ test("maps Gaxios error statuses to CalendarError kinds", async () => {
 
   for (const [status, expectedKind] of cases) {
     const client = fakeClient({
-      list: (async () => {
+      list: async () => {
         throw fakeGaxiosError(status);
-      }) as calendar_v3.Calendar["events"]["list"],
+      },
     });
     const provider = new GoogleCalendarProvider(client, "primary");
 
-    await assert.rejects(
-      provider.listEvents({}),
-      (error: unknown) => {
-        assert.ok(error instanceof CalendarError, `status ${status}: expected a CalendarError`);
-        assert.equal(error.kind, expectedKind, `status ${status}`);
+    await assert.rejects(provider.listEvents({}), (error: unknown) => {
+      assert.ok(error instanceof CalendarError, `status ${status}: expected a CalendarError`);
+      assert.equal(error.kind, expectedKind, `status ${status}`);
 
-        return true;
-      },
-    );
+      return true;
+    });
   }
 });
-

@@ -18,4 +18,3 @@ export interface NotesProvider {
   remove(userId: number, noteId: number): boolean;
   removeAll(userId: number): number;
 }
-

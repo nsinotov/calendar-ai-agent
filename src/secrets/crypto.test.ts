@@ -53,4 +53,3 @@ test("loadEncryptionKey() accepts a valid 32-byte hex key", () => {
 
   assert.equal(loadEncryptionKey(hex).length, 32);
 });
-

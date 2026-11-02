@@ -35,7 +35,9 @@ export function formatWeeklySummary(events: CalendarEvent[], timezone: string): 
     byDate.set(date, [...(byDate.get(date) ?? []), event]);
   }
 
-  const days = [...byDate].map(([date, dayEvents]) => `${date}:\n${dayEvents.map((event) => eventLine(event, timezone)).join("\n")}`);
+  const days = [...byDate].map(
+    ([date, dayEvents]) => `${date}:\n${dayEvents.map((event) => eventLine(event, timezone)).join("\n")}`,
+  );
 
   return ["Your events for the coming week:", ...days].join("\n\n");
 }
@@ -45,7 +47,6 @@ export function formatEventReminder(event: CalendarEvent, minutesLeft: number, t
 
   return `Reminder: "${event.title}" starts at ${start} (in ${minutesLeft} min).${event.location ? ` Place: ${event.location}.` : ""}`;
 }
-
 
 export function formatLateEventReminder(event: CalendarEvent, minutesLeft: number, timezone: string): string {
   const start = localParts(new Date(event.start.value), timezone).time;

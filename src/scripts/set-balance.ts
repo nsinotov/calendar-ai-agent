@@ -18,4 +18,3 @@ storage.billing.setBalance(amount);
 storage.close();
 
 console.log(`LLM balance set to $${amount.toFixed(2)}.`);
-

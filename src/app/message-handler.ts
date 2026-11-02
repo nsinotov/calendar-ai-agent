@@ -34,7 +34,8 @@ export function createMessageHandler(deps: MessageHandlerDeps): MessageHandler {
 
     const parsed = parseCommand(text);
     const role = deps.users.get(userId)?.role;
-    const command = parsed && role && deps.commands.find((candidate) => candidate.name === parsed.name && canUse(role, candidate));
+    const command =
+      parsed && role && deps.commands.find((candidate) => candidate.name === parsed.name && canUse(role, candidate));
     if (command && parsed) {
       await deps.messaging.send(userId, await command.run(userId, parsed.args));
 
@@ -61,4 +62,3 @@ export function createMessageHandler(deps: MessageHandlerDeps): MessageHandler {
     }
   };
 }
-

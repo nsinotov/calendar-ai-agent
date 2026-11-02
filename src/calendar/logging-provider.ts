@@ -13,31 +13,47 @@ export class LoggingCalendarProvider implements CalendarProvider {
   async listEvents(options: ListEventsOptions): Promise<CalendarEvent[]> {
     this.logger.debug("calendar.listEvents.request", { options });
 
-    return this.run("calendar.listEvents", () => this.inner.listEvents(options), (events) => ({
-      count: events.length,
-    }));
+    return this.run(
+      "calendar.listEvents",
+      () => this.inner.listEvents(options),
+      (events) => ({
+        count: events.length,
+      }),
+    );
   }
 
   async createEvent(input: EventInput): Promise<CalendarEvent> {
     this.logger.debug("calendar.createEvent.request", { input });
 
-    return this.run("calendar.createEvent", () => this.inner.createEvent(input), (event) => ({
-      id: event.id,
-    }));
+    return this.run(
+      "calendar.createEvent",
+      () => this.inner.createEvent(input),
+      (event) => ({
+        id: event.id,
+      }),
+    );
   }
 
   async updateEvent(id: string, input: Partial<EventInput>): Promise<CalendarEvent> {
     this.logger.debug("calendar.updateEvent.request", { id, input });
 
-    return this.run("calendar.updateEvent", () => this.inner.updateEvent(id, input), (event) => ({
-      id: event.id,
-    }));
+    return this.run(
+      "calendar.updateEvent",
+      () => this.inner.updateEvent(id, input),
+      (event) => ({
+        id: event.id,
+      }),
+    );
   }
 
   async deleteEvent(id: string): Promise<void> {
     this.logger.debug("calendar.deleteEvent.request", { id });
 
-    return this.run("calendar.deleteEvent", () => this.inner.deleteEvent(id), () => ({ id }));
+    return this.run(
+      "calendar.deleteEvent",
+      () => this.inner.deleteEvent(id),
+      () => ({ id }),
+    );
   }
 
   canDelete(event: CalendarEvent): boolean {
@@ -65,4 +81,3 @@ export class LoggingCalendarProvider implements CalendarProvider {
     }
   }
 }
-

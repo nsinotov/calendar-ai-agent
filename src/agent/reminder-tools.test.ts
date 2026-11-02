@@ -44,4 +44,3 @@ test("remove_event_reminder reports whether a reminder existed", async () => {
   assert.deepEqual(JSON.parse(await tool.execute({ eventId: "e1" })), { removed: true });
   assert.deepEqual(JSON.parse(await tool.execute({ eventId: "e1" })), { removed: false });
 });
-

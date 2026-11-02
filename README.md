@@ -113,9 +113,10 @@ docker compose exec agent node dist/scripts/set-balance.js 20
 - `pnpm add-user`: register a user with a role and their credentials (run on the server)
 - `pnpm set-balance <usd>`: set the tracked LLM balance after a top-up (run on the server)
 - `pnpm typecheck`: type-check the project
+- `pnpm lint`: lint the project (ESLint)
+- `pnpm format`: format the project (Prettier); `pnpm format:check` only checks
 - `pnpm test`: run unit tests
 
 ## License
 
 [MIT](LICENSE)
-

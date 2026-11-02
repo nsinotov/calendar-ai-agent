@@ -58,10 +58,19 @@ test("load() redacts tool results older than the tool-result retention window", 
 
   assert.deepEqual(loaded[2], {
     role: "user",
-    content: [{ type: "tool_result", callId: "t1", content: "[Tool result expired from context; call the tool again if you still need this data.]" }],
+    content: [
+      {
+        type: "tool_result",
+        callId: "t1",
+        content: "[Tool result expired from context; call the tool again if you still need this data.]",
+      },
+    ],
   });
   // The paired tool call and the surrounding chat text are unaffected.
-  assert.deepEqual(loaded[1], { role: "assistant", content: [{ type: "tool_call", id: "t1", name: "list_events", input: {} }] });
+  assert.deepEqual(loaded[1], {
+    role: "assistant",
+    content: [{ type: "tool_call", id: "t1", name: "list_events", input: {} }],
+  });
   assert.deepEqual(loaded[0], { role: "user", content: "list my events" });
 });
 
@@ -96,4 +105,3 @@ test("one user's history is never visible to another user", () => {
   assert.deepEqual(store.load(1, 7), [{ role: "user", content: "user 1 message" }]);
   assert.deepEqual(store.load(2, 7), [{ role: "user", content: "user 2 message" }]);
 });
-

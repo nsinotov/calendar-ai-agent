@@ -43,4 +43,3 @@ test("rejections are tracked per sender", () => {
 
   assert.equal(access.check(100), "rejected");
 });
-

@@ -11,7 +11,11 @@ function recordingProvider(): LogProvider & { entries: LogEntry[] } {
 
 test("only dispatches levels that are enabled", () => {
   const provider = recordingProvider();
-  const logger = new CompositeLogger({ providers: [provider], levels: new Set(["error", "info"]), debugEnabled: false });
+  const logger = new CompositeLogger({
+    providers: [provider],
+    levels: new Set(["error", "info"]),
+    debugEnabled: false,
+  });
 
   logger.error("e");
   logger.warn("w");
@@ -50,4 +54,3 @@ test("a failing provider does not stop other providers or throw", () => {
   assert.doesNotThrow(() => logger.info("still works"));
   assert.equal(good.entries.length, 1);
 });
-

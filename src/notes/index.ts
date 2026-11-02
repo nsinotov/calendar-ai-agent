@@ -7,4 +7,3 @@ export type { Note, NoteInput, NotesProvider } from "./types.js";
 export function createNotesProvider(db: DatabaseSync): NotesProvider {
   return new SqliteNotesProvider(db);
 }
-

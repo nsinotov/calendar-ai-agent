@@ -20,4 +20,3 @@ export function createCalendarResolver(deps: {
     return createCalendarProvider({ provider, credentials, appCredentials: deps.appCredentials }, deps.logger);
   };
 }
-

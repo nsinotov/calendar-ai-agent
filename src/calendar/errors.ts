@@ -12,4 +12,3 @@ export class CalendarError extends Error {
     this.name = "CalendarError";
   }
 }
-

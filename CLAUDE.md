@@ -63,6 +63,8 @@ src/
 - `pnpm dev` — run in development mode
 - `pnpm test` — run unit tests (`node:test`)
 - `pnpm typecheck` — type-check the project
+- `pnpm lint` — lint the project (ESLint)
+- `pnpm format` — format the project (Prettier); `pnpm format:check` only checks
 - `pnpm add-user` — register a user with a role and their credentials (run on the server)
 - `pnpm set-balance <usd>` — set the tracked LLM balance after a top-up (run on the server)
 - `pnpm build` — build for production
@@ -78,4 +80,3 @@ src/
 - ESM modules
 - Interfaces for provider abstractions; factories take `provider: string`, switch on it with a `default` that throws, and provider names appear nowhere outside their factory
 - Zod for runtime validation
-

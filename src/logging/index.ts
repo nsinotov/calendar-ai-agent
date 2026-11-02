@@ -35,4 +35,3 @@ export function createLogger(config: LoggingConfig): CompositeLogger {
     debugEnabled: config.debugEnabled,
   });
 }
-

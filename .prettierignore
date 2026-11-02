@@ -1,0 +1,6 @@
+dist
+node_modules
+data
+site
+pnpm-lock.yaml
+local_docs

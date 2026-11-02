@@ -57,13 +57,13 @@ const failing: LlmProvider = {
   complete: async () => {
     throw new Error("llm down");
   },
-} as unknown as LlmProvider;
+};
 
 const noCredits: LlmProvider = {
   complete: async () => {
     throw new LlmError("insufficient_credits", "no credits");
   },
-} as unknown as LlmProvider;
+};
 
 test("a registered user's message goes to the agent and the reply is sent back", async () => {
   const { handler, sent } = setup(answering);
@@ -80,7 +80,7 @@ test("an unregistered sender gets one static reply and no LLM call", async () =>
   await handler({ userId: 99, text: "hi again" });
 
   assert.equal(sent.length, 1);
-  assert.equal(sent[0]![0], 99);
+  assert.equal(sent[0][0], 99);
 });
 
 test("/clear wipes the history and sends the LLM's translation of the confirmation", async () => {
@@ -109,7 +109,7 @@ test("an agent failure sends a static apology and rethrows", async () => {
   await assert.rejects(handler({ userId: 1, text: "hi" }), /llm down/);
 
   assert.equal(sent.length, 1);
-  assert.equal(sent[0]![0], 1);
+  assert.equal(sent[0][0], 1);
 });
 
 test("/balance shows the tracked balance to admins", async () => {
@@ -118,7 +118,7 @@ test("/balance shows the tracked balance to admins", async () => {
 
   await handler({ userId: 2, text: "/balance" });
 
-  assert.match(sent[0]![1], /\$12\.35/);
+  assert.match(sent[0][1], /\$12\.35/);
 });
 
 test("/balance from a regular user is treated as an ordinary message", async () => {
@@ -138,7 +138,7 @@ test("/setbalance sets the balance and clears the outage for admins", async () =
 
   assert.equal(billingStore.get().balanceUsd, 20);
   assert.equal(billingStore.get().outage, false);
-  assert.match(sent[0]![1], /\$20\.00/);
+  assert.match(sent[0][1], /\$20\.00/);
 });
 
 test("/setbalance with a bad amount shows the usage and changes nothing", async () => {
@@ -150,7 +150,7 @@ test("/setbalance with a bad amount shows the usage and changes nothing", async 
 
   assert.equal(billingStore.get().balanceUsd, 5);
   assert.equal(sent.length, 2);
-  assert.match(sent[0]![1], /Usage/);
+  assert.match(sent[0][1], /Usage/);
 });
 
 test("/setbalance from a regular user is treated as an ordinary message", async () => {
@@ -189,4 +189,3 @@ test("during an outage messages get the static reply without an LLM call", async
   assert.equal(calls, 0);
   assert.deepEqual(sent, [[1, OUTAGE_USER_TEXT]]);
 });
-

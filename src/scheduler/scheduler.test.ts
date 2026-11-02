@@ -18,8 +18,16 @@ function setup(resolve: (userId: number) => CalendarProvider | null, jobs: Job[]
   users.upsert(1, "user");
   users.upsert(2, "user");
   const errors: Record<string, unknown>[] = [];
-  const logger: Logger = { error: (_message, context) => void errors.push(context ?? {}), warn() {}, info() {}, debug() {} };
-  const scheduler = new Scheduler({ users, settings: new SqliteUserSettingsStore(db), resolveCalendar: resolve, jobs, logger }, 60_000);
+  const logger: Logger = {
+    error: (_message, context) => void errors.push(context ?? {}),
+    warn() {},
+    info() {},
+    debug() {},
+  };
+  const scheduler = new Scheduler(
+    { users, settings: new SqliteUserSettingsStore(db), resolveCalendar: resolve, jobs, logger },
+    60_000,
+  );
 
   return { scheduler, errors };
 }
@@ -49,7 +57,7 @@ test("a failing job is logged and the other jobs and users still run", async () 
 
   assert.deepEqual(seen, ["ok1", "ok2"]);
   assert.equal(errors.length, 2);
-  assert.equal(errors[0]!.job, "failing");
+  assert.equal(errors[0].job, "failing");
 });
 
 test("a user whose calendar cannot be built is logged and skipped", async () => {
@@ -69,7 +77,7 @@ test("a user whose calendar cannot be built is logged and skipped", async () => 
   await scheduler.tick();
 
   assert.deepEqual(seen, ["j2"]);
-  assert.equal(errors[0]!.job, "setup");
+  assert.equal(errors[0].job, "setup");
 });
 
 test("overlapping ticks do not run the jobs twice", async () => {
@@ -92,4 +100,3 @@ test("overlapping ticks do not run the jobs twice", async () => {
 
   assert.equal(runs, 1);
 });
-

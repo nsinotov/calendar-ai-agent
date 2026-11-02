@@ -20,9 +20,9 @@ test("parseCommand() returns null for ordinary text", () => {
 });
 
 test("admins can use every command, users only the user-level ones", () => {
-  const names = (role: "admin" | "user") => commands.filter((command) => canUse(role, command)).map((command) => command.name);
+  const names = (role: "admin" | "user") =>
+    commands.filter((command) => canUse(role, command)).map((command) => command.name);
 
   assert.deepEqual(names("user"), ["clear"]);
   assert.deepEqual(names("admin"), ["clear", "balance", "setbalance"]);
 });
-

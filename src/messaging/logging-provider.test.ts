@@ -76,4 +76,3 @@ test("send() logs the text at debug only", async () => {
   const info = logger.calls.find(([level]) => level === "info")!;
   assert.ok(!("text" in (info[2] ?? {})));
 });
-

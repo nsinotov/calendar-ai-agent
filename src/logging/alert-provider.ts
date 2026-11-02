@@ -63,4 +63,3 @@ function alertText(event: string, kind: string | null, suppressed: number): stri
 
   return `System error: ${event}${kind ? ` [${kind}]` : ""}${repeats}. See the server logs.`;
 }
-

@@ -11,4 +11,3 @@ export interface MessagingProvider {
   start(): Promise<void>;
   stop(): Promise<void>;
 }
-

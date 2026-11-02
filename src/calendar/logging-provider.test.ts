@@ -41,7 +41,7 @@ test("listEvents() logs a debug request, then an info response with just the cou
   const levels = logger.calls.map(([level]) => level);
   assert.deepEqual(levels, ["debug", "info"]);
 
-  const [, , infoContext] = logger.calls[1]!;
+  const [, , infoContext] = logger.calls[1];
   assert.equal(infoContext?.count, 1);
   assert.ok(!("title" in (infoContext ?? {})), "info log must not carry event content");
 });
@@ -84,4 +84,3 @@ test("canDelete() passes through to the inner provider without logging", () => {
   assert.equal(provider.canDelete({ ...sampleEvent, id: "no" }), false);
   assert.deepEqual(logger.calls, []);
 });
-

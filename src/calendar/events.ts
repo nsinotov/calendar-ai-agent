@@ -10,4 +10,3 @@ export function hasEnded(event: CalendarEvent, now: Date, timezone: string): boo
 
   return event.end.value <= today;
 }
-

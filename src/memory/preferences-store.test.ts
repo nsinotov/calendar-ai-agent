@@ -57,4 +57,3 @@ test("users cannot see, update or remove each other's preferences", () => {
   assert.equal(store.remove(2, id), false);
   assert.deepEqual(store.list(1), [{ id, text: "Private rule" }]);
 });
-

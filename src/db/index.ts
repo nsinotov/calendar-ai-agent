@@ -67,4 +67,3 @@ export function createStorage(config: StorageConfig): Storage {
       throw new Error(`Unknown storage provider: "${config.provider}"`);
   }
 }
-

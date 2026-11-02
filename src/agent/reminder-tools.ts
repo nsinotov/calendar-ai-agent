@@ -46,4 +46,3 @@ export function createReminderTools(reminders: EventReminderStore, userId: numbe
     ),
   ];
 }
-

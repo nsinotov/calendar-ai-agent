@@ -102,10 +102,7 @@ function fromAnthropicResponse(response: Anthropic.Message): LlmResponse {
     usage: {
       // Cached tokens are billed at different rates; counting them at the full
       // rate slightly overestimates spend, which is the safe side for a budget.
-      inputTokens:
-        usage.input_tokens +
-        (usage.cache_creation_input_tokens ?? 0) +
-        (usage.cache_read_input_tokens ?? 0),
+      inputTokens: usage.input_tokens + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0),
       outputTokens: usage.output_tokens,
     },
   };
@@ -134,10 +131,7 @@ function toLlmError(error: unknown): LlmError {
     return new LlmError("auth", error.message, { cause: error });
   } else if (error instanceof Anthropic.RateLimitError) {
     return new LlmError("rate_limit", error.message, { cause: error });
-  } else if (
-    error instanceof Anthropic.InternalServerError ||
-    error instanceof Anthropic.APIConnectionError
-  ) {
+  } else if (error instanceof Anthropic.InternalServerError || error instanceof Anthropic.APIConnectionError) {
     return new LlmError("unavailable", error.message, { cause: error });
   }
   const message = error instanceof Error ? error.message : String(error);
@@ -148,4 +142,3 @@ function toLlmError(error: unknown): LlmError {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
-

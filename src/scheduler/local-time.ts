@@ -1,6 +1,4 @@
-const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
-
-export type Weekday = (typeof WEEKDAYS)[number];
+export type Weekday = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
 
 export interface LocalParts {
   // "2026-09-25"
@@ -45,7 +43,14 @@ export function minutesOfDay(time: string): number {
 // Offset of the timezone from UTC at the given instant, in milliseconds.
 function offsetMs(date: Date, timezone: string): number {
   const p = formatParts(date, timezone);
-  const asUtc = Date.UTC(Number(p.year), Number(p.month) - 1, Number(p.day), Number(p.hour), Number(p.minute), Number(p.second));
+  const asUtc = Date.UTC(
+    Number(p.year),
+    Number(p.month) - 1,
+    Number(p.day),
+    Number(p.hour),
+    Number(p.minute),
+    Number(p.second),
+  );
 
   return asUtc - Math.floor(date.getTime() / 1000) * 1000;
 }
@@ -71,4 +76,3 @@ export function inWindow(local: LocalParts, time: string, graceMinutes: number):
 
   return elapsed >= 0 && elapsed <= graceMinutes;
 }
-

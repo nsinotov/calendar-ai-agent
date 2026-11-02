@@ -79,4 +79,3 @@ test("users cannot see or remove each other's notes", () => {
   assert.equal(notes.remove(2, note.id), false);
   assert.equal(notes.list(1).length, 1);
 });
-

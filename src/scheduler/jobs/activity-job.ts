@@ -23,4 +23,3 @@ export function createActivityJob(deps: { sent: SentStore; activity: Omit<Activi
     },
   };
 }
-

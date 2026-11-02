@@ -71,7 +71,9 @@ export class BillingService {
     this.store.setOutage(true);
     this.lastProbeAt = this.now();
     void this.notifier.broadcast(OUTAGE_USER_TEXT);
-    void this.notifier.notifyAdmins("The LLM provider is out of credits. Top up the account; the assistant recovers on its own.");
+    void this.notifier.notifyAdmins(
+      "The LLM provider is out of credits. Top up the account; the assistant recovers on its own.",
+    );
   }
 
   private trackSpend(usage: LlmUsage): void {
@@ -81,7 +83,9 @@ export class BillingService {
       return;
     }
 
-    this.store.deduct((usage.inputTokens * prices.inputPerMtok + usage.outputTokens * prices.outputPerMtok) / 1_000_000);
+    this.store.deduct(
+      (usage.inputTokens * prices.inputPerMtok + usage.outputTokens * prices.outputPerMtok) / 1_000_000,
+    );
     const balance = this.store.get().balanceUsd ?? 0;
 
     if (balance >= this.config.lowBalanceUsd) {
@@ -99,4 +103,3 @@ export class BillingService {
     }
   }
 }
-

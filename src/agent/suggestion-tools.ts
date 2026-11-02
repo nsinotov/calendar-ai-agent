@@ -29,7 +29,12 @@ export function createSuggestionTools(input: SuggestionToolsInput): Tool[] {
 }
 
 // WARNING: experimental. Sends the user's events, notes and activity memory (sensitive data) to the LLM.
-export async function generateSuggestions(deps: ActivityDeps, userId: number, language: string, now: Date): Promise<string[]> {
+export async function generateSuggestions(
+  deps: ActivityDeps,
+  userId: number,
+  language: string,
+  now: Date,
+): Promise<string[]> {
   const context = await gatherActivityContext(deps.calendar, deps.notes, userId, now);
   const response = await deps.llm.complete({
     system: suggestionsSystem(language),
@@ -62,4 +67,3 @@ function parseSuggestions(text: string): string[] {
     .filter(Boolean)
     .slice(0, MAX_SUGGESTIONS);
 }
-

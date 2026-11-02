@@ -50,4 +50,3 @@ test("pruneOlderThan() drops only old entries", () => {
   assert.equal(store.get(1, "old"), null);
   assert.equal(store.get(1, "new"), 60);
 });
-

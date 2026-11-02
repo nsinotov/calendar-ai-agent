@@ -27,9 +27,8 @@ export class SqliteUserStore implements UserStore {
   constructor(private readonly db: DatabaseSync) {}
 
   get(userId: number): User | null {
-    const row = this.db
-      .prepare("SELECT telegram_user_id, role FROM users WHERE telegram_user_id = ?")
-      .get(userId) as UserRow | undefined;
+    const row = this.db.prepare("SELECT telegram_user_id, role FROM users WHERE telegram_user_id = ?").get(userId) as
+      UserRow | undefined;
 
     return row ? toUser(row) : null;
   }
@@ -55,4 +54,3 @@ export class SqliteUserStore implements UserStore {
       .run(userId, role, Date.now());
   }
 }
-

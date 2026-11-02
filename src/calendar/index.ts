@@ -52,7 +52,11 @@ function createRawProvider(config: CalendarConfig): CalendarProvider {
   }
 }
 
-function requireFields(label: string, source: Record<string, string> | undefined, keys: string[]): Record<string, string> {
+function requireFields(
+  label: string,
+  source: Record<string, string> | undefined,
+  keys: string[],
+): Record<string, string> {
   const result: Record<string, string> = {};
   for (const key of keys) {
     const value = source?.[key];
@@ -64,4 +68,3 @@ function requireFields(label: string, source: Record<string, string> | undefined
 
   return result;
 }
-

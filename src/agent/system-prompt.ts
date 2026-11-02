@@ -1,10 +1,6 @@
 import type { Preference } from "../memory/preferences-store.js";
 import { PROACTIVE_MESSAGE_MARKER } from "./agent.js";
-import {
-  remainingOnboardingSteps,
-  type OnboardingStep,
-  type UserSettings,
-} from "../memory/user-settings-store.js";
+import { remainingOnboardingSteps, type OnboardingStep, type UserSettings } from "../memory/user-settings-store.js";
 
 export interface SystemPromptInput {
   settings: UserSettings;
@@ -51,7 +47,7 @@ export function buildSystemPrompt({
     ].join("\n"),
     [
       "Rules:",
-      "- Resolve relative dates and times (\"tomorrow\", \"next Friday at 3\") from the current time above and pass full values to the tools.",
+      '- Resolve relative dates and times ("tomorrow", "next Friday at 3") from the current time above and pass full values to the tools.',
       "- If a date, time or target event is ambiguous, ask a short clarifying question instead of guessing.",
       "- To change or delete an event, first find its id with list_events. Never invent ids.",
       "- Before delete_old_events or remove_all_notes, ask the user to confirm, and only call the tool after they agree.",
@@ -74,7 +70,8 @@ const STEP_DESCRIPTIONS: Record<OnboardingStep, (settings: UserSettings) => stri
   timezone: (s) => `timezone (default: ${s.timezone})`,
   weekStart: (s) => `first day of the week (default: ${s.weekStart})`,
   contextRetention: (s) => `how many days the conversation history is kept (default: ${s.contextRetentionDays})`,
-  weeklyReminder: (s) => `weekly summary message (default: ${onOff(s.weeklyReminderEnabled)} at ${s.weeklyReminderTime})`,
+  weeklyReminder: (s) =>
+    `weekly summary message (default: ${onOff(s.weeklyReminderEnabled)} at ${s.weeklyReminderTime})`,
   dailyReminder: (s) =>
     `daily summary message (default: ${onOff(s.dailyReminderEnabled)} at ${s.dailyReminderTime}, ${s.dailyReminderWhenEmpty ? "also" : "not"} sent on days with no events)`,
   eventReminder: (s) =>
@@ -137,9 +134,7 @@ function activitySection(summary: string | null | undefined): string {
 }
 
 function offTopicRule(allowedTopics: string[]): string {
-  const extra = allowedTopics.length
-    ? ` You may also help with these topics: ${allowedTopics.join(", ")}.`
-    : "";
+  const extra = allowedTopics.length ? ` You may also help with these topics: ${allowedTopics.join(", ")}.` : "";
 
   return `Politely decline anything else (weather, coding, images, politics, general chat and so on) in your own words, briefly say what you can help with instead, and do not answer the off-topic request.${extra}`;
 }
@@ -173,4 +168,3 @@ function utcOffset(now: Date, timezone: string): string {
 function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
-

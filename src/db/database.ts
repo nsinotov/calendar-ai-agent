@@ -102,4 +102,3 @@ export function openDatabase(dataDir: string): DatabaseSync {
 
   return db;
 }
-

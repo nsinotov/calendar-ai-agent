@@ -19,4 +19,3 @@ export function createMessagingNotifier(messaging: MessagingProvider, users: Use
     broadcast: (text) => sendAll(users.list(), text),
   };
 }
-

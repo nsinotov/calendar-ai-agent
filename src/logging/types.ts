@@ -18,4 +18,3 @@ export interface Logger {
   // Verbose, may contain personal data (message text, tool inputs). Gated by DEBUG_ENABLED.
   debug(message: string, context?: Record<string, unknown>): void;
 }
-

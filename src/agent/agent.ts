@@ -79,4 +79,3 @@ function joinText(content: ContentBlock[]): string {
     .join("\n")
     .trim();
 }
-

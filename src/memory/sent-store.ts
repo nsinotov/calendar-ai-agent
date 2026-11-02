@@ -14,7 +14,10 @@ export class SqliteSentStore implements SentStore {
   constructor(private readonly db: DatabaseSync) {}
 
   has(userId: number, key: string): boolean {
-    return this.db.prepare("SELECT 1 FROM sent_notifications WHERE telegram_user_id = ? AND key = ?").get(userId, key) !== undefined;
+    return (
+      this.db.prepare("SELECT 1 FROM sent_notifications WHERE telegram_user_id = ? AND key = ?").get(userId, key) !==
+      undefined
+    );
   }
 
   mark(userId: number, key: string, at: number = Date.now()): void {
@@ -35,4 +38,3 @@ export class SqliteSentStore implements SentStore {
     this.db.prepare("DELETE FROM sent_notifications WHERE sent_at < ?").run(timestamp);
   }
 }
-

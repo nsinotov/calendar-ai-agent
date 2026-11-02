@@ -15,4 +15,3 @@ export interface Job {
 }
 
 export type SendMessage = (userId: number, text: string) => Promise<void>;
-

@@ -52,7 +52,7 @@ test("repeats of the same event inside the window are counted, then reported lat
   await flush();
 
   assert.equal(sent.length, 2);
-  assert.match(sent[1]!, /2 similar errors/);
+  assert.match(sent[1], /2 similar errors/);
 });
 
 test("different events alert independently", async () => {
@@ -85,4 +85,3 @@ test("entries are dropped until a sink is connected", async () => {
 
   assert.doesNotThrow(() => provider.write(entry("error", "early")));
 });
-

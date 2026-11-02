@@ -36,10 +36,7 @@ export class SqliteUserSecretsStore implements UserSecretsStore {
       return null;
     }
 
-    const plaintext = decrypt(
-      { ciphertext: row.ciphertext, iv: row.iv, authTag: row.auth_tag },
-      this.encryptionKey,
-    );
+    const plaintext = decrypt({ ciphertext: row.ciphertext, iv: row.iv, authTag: row.auth_tag }, this.encryptionKey);
 
     return JSON.parse(plaintext) as Record<string, string>;
   }
@@ -75,4 +72,3 @@ export class SqliteUserSecretsStore implements UserSecretsStore {
       .run(userId, kind, provider);
   }
 }
-

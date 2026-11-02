@@ -22,4 +22,3 @@ export function createCapabilitiesTool(tools: Tool[], commands: CommandInfo[] = 
     }),
   );
 }
-

@@ -55,4 +55,3 @@ export function createPreferencesTools(preferences: PreferencesStore, userId: nu
     ),
   ];
 }
-

@@ -29,7 +29,7 @@ function testBot(): { bot: Bot; calls: ApiCall[] } {
   });
   const calls: ApiCall[] = [];
   bot.api.config.use(async (_previous, method, payload) => {
-    calls.push({ method, payload: payload as Record<string, unknown> });
+    calls.push({ method, payload: payload });
 
     return { ok: true, result: true } as never;
   });
@@ -90,4 +90,3 @@ test("send() splits text over the Telegram limit into several messages", async (
   assert.equal(calls.length, 2);
   assert.ok(calls.every((call) => String(call.payload.text).length <= 4096));
 });
-

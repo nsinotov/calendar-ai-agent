@@ -10,7 +10,7 @@ export interface Command extends CommandInfo {
   // The lowest role allowed to use it; admins can use everything.
   role: UserRole;
   // Returns the reply text.
-  run(userId: number, args: string): Promise<string>;
+  run(userId: number, args: string): string | Promise<string>;
 }
 
 export interface CommandDeps {
@@ -35,7 +35,9 @@ export function createCommands(deps: CommandDeps): Command[] {
       async run(userId) {
         deps.conversations.clear(userId);
 
-        return deps.billing.isOutage() ? HISTORY_CLEARED : translate(deps.llm, deps.languageOf(userId), HISTORY_CLEARED);
+        return deps.billing.isOutage()
+          ? HISTORY_CLEARED
+          : translate(deps.llm, deps.languageOf(userId), HISTORY_CLEARED);
       },
     },
     {
@@ -43,7 +45,7 @@ export function createCommands(deps: CommandDeps): Command[] {
       usage: "/balance",
       description: "Show the tracked LLM balance.",
       role: "admin",
-      async run() {
+      run() {
         const balance = deps.billing.balanceUsd();
 
         return balance === null
@@ -56,7 +58,7 @@ export function createCommands(deps: CommandDeps): Command[] {
       usage: "/setbalance <usd>",
       description: "Set the tracked LLM balance after a top-up, e.g. /setbalance 20.",
       role: "admin",
-      async run(_userId, args) {
+      run(_userId, args) {
         if (!AMOUNT.test(args)) {
           return "Usage: /setbalance <usd>, e.g. /setbalance 20";
         }
@@ -78,6 +80,5 @@ export function canUse(role: UserRole, command: Command): boolean {
 export function parseCommand(text: string): { name: string; args: string } | null {
   const match = /^\/(\w+)(?:@\w+)?(?:\s+([\s\S]*))?$/.exec(text.trim());
 
-  return match ? { name: match[1]!.toLowerCase(), args: match[2]?.trim() ?? "" } : null;
+  return match ? { name: match[1].toLowerCase(), args: match[2]?.trim() ?? "" } : null;
 }
-

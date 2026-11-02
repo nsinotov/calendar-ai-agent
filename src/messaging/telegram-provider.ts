@@ -68,4 +68,3 @@ export class TelegramMessagingProvider implements MessagingProvider {
     await new Promise<void>((resolve) => this.server?.listen(webhook.port, resolve));
   }
 }
-

@@ -23,4 +23,3 @@ export async function translate(llm: LlmProvider, language: string, text: string
     return text;
   }
 }
-

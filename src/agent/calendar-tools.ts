@@ -10,7 +10,10 @@ const TIME_HINT =
 
 const TIME_PROPERTY = { type: "string", description: TIME_HINT };
 
-export function createCalendarTools(calendar: CalendarProvider, options: { timezone: string; now?: () => Date }): Tool[] {
+export function createCalendarTools(
+  calendar: CalendarProvider,
+  options: { timezone: string; now?: () => Date },
+): Tool[] {
   const now = options.now ?? (() => new Date());
 
   return [
@@ -111,7 +114,8 @@ export function createCalendarTools(calendar: CalendarProvider, options: { timez
     defineTool(
       {
         name: "delete_old_events",
-        description: "Delete every event that has already ended, in one call. Irreversible: confirm with the user first.",
+        description:
+          "Delete every event that has already ended, in one call. Irreversible: confirm with the user first.",
         inputSchema: { type: "object", properties: {} },
       },
       z.object({}),
@@ -139,4 +143,3 @@ export function createCalendarTools(calendar: CalendarProvider, options: { timez
 function toEventTime(value: string): EventTime {
   return { allDay: !value.includes("T"), value };
 }
-

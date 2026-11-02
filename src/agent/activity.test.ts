@@ -98,7 +98,7 @@ test("get_suggestions returns parsed suggestions capped at three", async () => {
   const { deps } = setup("1. Did you buy the milk?\n- How was the dentist?\n\n* Add a re-check?\nExtra one", [dentist]);
   const [tool] = createSuggestionTools({ ...deps, userId: 1, language: "en", now: () => NOW });
 
-  const result = JSON.parse(await tool!.execute({})) as { suggestions: string[] };
+  const result = JSON.parse(await tool.execute({})) as { suggestions: string[] };
 
   assert.deepEqual(result.suggestions, ["Did you buy the milk?", "How was the dentist?", "Add a re-check?"]);
 });
@@ -107,6 +107,5 @@ test("get_suggestions returns an empty list when the model has nothing to sugges
   const { deps } = setup("");
   const [tool] = createSuggestionTools({ ...deps, userId: 1, language: "en", now: () => NOW });
 
-  assert.equal(await tool!.execute({}), '{"suggestions":[]}');
+  assert.equal(await tool.execute({}), '{"suggestions":[]}');
 });
-

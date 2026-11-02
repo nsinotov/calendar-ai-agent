@@ -13,7 +13,12 @@ const llm = {} as LlmProvider;
 
 function build(options: { calendar: CalendarProvider | null; suggestionsEnabled: boolean }): string[] {
   const dataDir = mkdtempSync(join(tmpdir(), "context-"));
-  const storage = createStorage({ provider: "sqlite", dataDir, encryptionKeyHex: "0".repeat(64), contextRetentionDays: 7 });
+  const storage = createStorage({
+    provider: "sqlite",
+    dataDir,
+    encryptionKeyHex: "0".repeat(64),
+    contextRetentionDays: 7,
+  });
 
   try {
     storage.users.upsert(1, "user");
@@ -51,10 +56,14 @@ test("get_suggestions is registered only when the flag is on", () => {
   assert.ok(build({ calendar, suggestionsEnabled: true }).includes("get_suggestions"));
 });
 
-
 test("get_capabilities lists only the commands the user's role may use", async () => {
   const dataDir = mkdtempSync(join(tmpdir(), "context-"));
-  const storage = createStorage({ provider: "sqlite", dataDir, encryptionKeyHex: "0".repeat(64), contextRetentionDays: 7 });
+  const storage = createStorage({
+    provider: "sqlite",
+    dataDir,
+    encryptionKeyHex: "0".repeat(64),
+    contextRetentionDays: 7,
+  });
   const commands = [
     { name: "clear", usage: "/clear", description: "Clear.", role: "user" as const, run: async () => "" },
     { name: "balance", usage: "/balance", description: "Balance.", role: "admin" as const, run: async () => "" },

@@ -56,4 +56,3 @@ export function createNotesTools(notes: NotesProvider, userId: number): Tool[] {
     ),
   ];
 }
-

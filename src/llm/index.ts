@@ -40,4 +40,3 @@ function createRawProvider(config: LlmConfig): LlmProvider {
       throw new Error(`Unknown LLM provider: "${config.provider}"`);
   }
 }
-

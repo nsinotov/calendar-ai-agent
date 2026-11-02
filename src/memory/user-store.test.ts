@@ -38,7 +38,10 @@ test("listAdmins() returns only admins", () => {
   store.upsert(2, "user");
   store.upsert(3, "admin");
 
-  assert.deepEqual(store.listAdmins().map((user) => user.id), [1, 3]);
+  assert.deepEqual(
+    store.listAdmins().map((user) => user.id),
+    [1, 3],
+  );
 });
 
 test("users inserted without a role default to user", () => {
@@ -55,4 +58,3 @@ test("the database rejects an unknown role", () => {
 
   assert.throws(() => db.prepare("INSERT INTO users (telegram_user_id, role, created_at) VALUES (1, 'root', 0)").run());
 });
-

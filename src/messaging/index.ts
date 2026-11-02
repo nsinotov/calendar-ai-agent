@@ -30,4 +30,3 @@ function createRawProvider(config: MessagingConfig): MessagingProvider {
       throw new Error(`Unknown messaging provider: "${config.provider}"`);
   }
 }
-

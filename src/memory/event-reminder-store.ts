@@ -42,4 +42,3 @@ export class SqliteEventReminderStore implements EventReminderStore {
     this.db.prepare("DELETE FROM event_reminders WHERE created_at < ?").run(timestamp);
   }
 }
-

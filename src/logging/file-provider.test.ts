@@ -18,9 +18,11 @@ test("writes one JSON line per entry, in today's file", () => {
     provider.write({ timestamp, level: "info", message: "hello", context: { a: 1 } });
 
     const today = timestamp.slice(0, 10);
-    const lines = readFileSync(join(dir, `${today}.log`), "utf8").trim().split("\n");
+    const lines = readFileSync(join(dir, `${today}.log`), "utf8")
+      .trim()
+      .split("\n");
     assert.equal(lines.length, 1);
-    assert.deepEqual(JSON.parse(lines[0]!), { timestamp, level: "info", message: "hello", context: { a: 1 } });
+    assert.deepEqual(JSON.parse(lines[0]), { timestamp, level: "info", message: "hello", context: { a: 1 } });
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -43,4 +45,3 @@ test("a fresh provider sweeps log files past the retention window", () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
-

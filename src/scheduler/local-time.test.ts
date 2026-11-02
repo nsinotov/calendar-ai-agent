@@ -34,4 +34,3 @@ test("addDays() moves across month ends", () => {
 test("minutesOfDay() parses HH:MM", () => {
   assert.equal(minutesOfDay("08:30"), 510);
 });
-

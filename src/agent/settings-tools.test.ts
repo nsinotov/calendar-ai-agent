@@ -34,7 +34,10 @@ test("get_settings returns settings, available choices and the remaining onboard
   assert.equal(result.settings.language, "uk");
   assert.equal("onboarding" in result.settings, false);
   assert.deepEqual(result.available, { calendarProviders: ["google"] });
-  assert.deepEqual(result.onboardingRemaining, ONBOARDING_STEPS.filter((step) => step !== "name"));
+  assert.deepEqual(
+    result.onboardingRemaining,
+    ONBOARDING_STEPS.filter((step) => step !== "name"),
+  );
 });
 
 test("update_settings changes only the given fields and confirms their onboarding steps", async () => {
@@ -105,7 +108,10 @@ test("accept_defaults confirms the given steps without changing values", async (
   await tool("accept_defaults").execute({ steps: ["language", "timezone"] });
 
   assert.equal(store.get(1).language, "uk");
-  assert.deepEqual(remainingOnboardingSteps(store.get(1)), ONBOARDING_STEPS.filter((step) => step !== "language" && step !== "timezone"));
+  assert.deepEqual(
+    remainingOnboardingSteps(store.get(1)),
+    ONBOARDING_STEPS.filter((step) => step !== "language" && step !== "timezone"),
+  );
 });
 
 test("accept_defaults without steps confirms every remaining step", async () => {
@@ -130,4 +136,3 @@ test("settings tools only touch the bound user", async () => {
   assert.equal(store.get(2).name, null);
   assert.equal(remainingOnboardingSteps(store.get(2)).length, ONBOARDING_STEPS.length);
 });
-

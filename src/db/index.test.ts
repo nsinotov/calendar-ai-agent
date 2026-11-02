@@ -29,4 +29,3 @@ test("createStorage() returns stores that share one database", () => {
     rmSync(dataDir, { recursive: true, force: true });
   }
 });
-

@@ -85,12 +85,25 @@ export function createSettingsTools(input: SettingsToolsInput): Tool[] {
             weeklyReminderTime: { type: "string", description: "HH:MM" },
             dailyReminderEnabled: { type: "boolean" },
             dailyReminderTime: { type: "string", description: "HH:MM" },
-            dailyReminderWhenEmpty: { type: "boolean", description: "Send the daily summary on days with no events (a \"nothing planned\" message)." },
+            dailyReminderWhenEmpty: {
+              type: "boolean",
+              description: 'Send the daily summary on days with no events (a "nothing planned" message).',
+            },
             eventReminderEnabled: { type: "boolean" },
-            eventReminderMinutesBefore: { type: "number", description: "Default lead time before timed events, in minutes." },
-            oldEventsAction: { type: "string", enum: ["keep", "delete"], description: "What to do with events that already ended." },
+            eventReminderMinutesBefore: {
+              type: "number",
+              description: "Default lead time before timed events, in minutes.",
+            },
+            oldEventsAction: {
+              type: "string",
+              enum: ["keep", "delete"],
+              description: "What to do with events that already ended.",
+            },
             oldEventsRetentionDays: { type: "number", description: "Days to wait before old events are handled." },
-            calendarProvider: { type: "string", description: `One of: ${input.calendarProviders.join(", ") || "(none registered)"}.` },
+            calendarProvider: {
+              type: "string",
+              description: `One of: ${input.calendarProviders.join(", ") || "(none registered)"}.`,
+            },
           },
         },
       },
@@ -169,4 +182,3 @@ function isValidLanguage(value: string): boolean {
     return false;
   }
 }
-

@@ -44,7 +44,7 @@ async function main(): Promise<void> {
   }
 
   const credentials: Record<string, string> = {};
-  for (const field of calendarProvider ? calendarCredentialFields[calendarProvider]! : []) {
+  for (const field of calendarProvider ? calendarCredentialFields[calendarProvider] : []) {
     credentials[field.key] = await ask(field.prompt, field.default);
   }
 
@@ -57,7 +57,10 @@ async function main(): Promise<void> {
     calendarProvider: calendarProvider || null,
   });
   // Answers given here are confirmed; anything left empty is still asked during onboarding.
-  settingsStore.markOnboardingSteps(userId, name ? ["name", "language", "timezone", "weekStart"] : ["language", "timezone", "weekStart"]);
+  settingsStore.markOnboardingSteps(
+    userId,
+    name ? ["name", "language", "timezone", "weekStart"] : ["language", "timezone", "weekStart"],
+  );
   if (calendarProvider) {
     secretsStore.set(userId, "calendar", calendarProvider, credentials);
   }
@@ -68,4 +71,3 @@ async function main(): Promise<void> {
 }
 
 await main();
-

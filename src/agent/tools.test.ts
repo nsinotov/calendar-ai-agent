@@ -44,7 +44,7 @@ function fakeCalendar(
     async updateEvent(id, input) {
       updates.push({ id, input });
 
-      return { ...events[0]!, id, ...input };
+      return { ...events[0], id, ...input };
     },
     async deleteEvent(id) {
       deleteAttempts.push(id);
@@ -61,7 +61,12 @@ function fakeCalendar(
   return { calendar, created, updates, deleted, deleteAttempts };
 }
 
-function event(id: string, start: CalendarEvent["start"], end: CalendarEvent["end"], eventType?: string): CalendarEvent {
+function event(
+  id: string,
+  start: CalendarEvent["start"],
+  end: CalendarEvent["end"],
+  eventType?: string,
+): CalendarEvent {
   return { id, title: id, start, end, status: "confirmed", eventType };
 }
 
@@ -91,13 +96,19 @@ test("create_event rejects a date-time without a UTC offset", async () => {
   const tools = createCalendarTools(calendar, { timezone: "UTC" });
 
   await assert.rejects(
-    findTool(tools, "create_event").execute({ title: "Call", start: "2026-10-01T10:00:00", end: "2026-10-01T11:00:00" }),
+    findTool(tools, "create_event").execute({
+      title: "Call",
+      start: "2026-10-01T10:00:00",
+      end: "2026-10-01T11:00:00",
+    }),
     /Invalid arguments/,
   );
 });
 
 test("update_event sends only the provided fields", async () => {
-  const { calendar, updates } = fakeCalendar([event("e1", { allDay: true, value: "2026-10-01" }, { allDay: true, value: "2026-10-02" })]);
+  const { calendar, updates } = fakeCalendar([
+    event("e1", { allDay: true, value: "2026-10-01" }, { allDay: true, value: "2026-10-02" }),
+  ]);
   const tools = createCalendarTools(calendar, { timezone: "UTC" });
 
   await findTool(tools, "update_event").execute({ id: "e1", title: "Renamed" });
@@ -107,8 +118,16 @@ test("update_event sends only the provided fields", async () => {
 
 test("delete_old_events deletes only events that have already ended", async () => {
   const { calendar, deleted } = fakeCalendar([
-    event("past-timed", { allDay: false, value: "2026-09-24T08:00:00Z" }, { allDay: false, value: "2026-09-24T09:00:00Z" }),
-    event("running", { allDay: false, value: "2026-09-24T11:00:00Z" }, { allDay: false, value: "2026-09-24T13:00:00Z" }),
+    event(
+      "past-timed",
+      { allDay: false, value: "2026-09-24T08:00:00Z" },
+      { allDay: false, value: "2026-09-24T09:00:00Z" },
+    ),
+    event(
+      "running",
+      { allDay: false, value: "2026-09-24T11:00:00Z" },
+      { allDay: false, value: "2026-09-24T13:00:00Z" },
+    ),
     event("past-allday", { allDay: true, value: "2026-09-22" }, { allDay: true, value: "2026-09-23" }),
     event("today-allday", { allDay: true, value: "2026-09-24" }, { allDay: true, value: "2026-09-25" }),
   ]);
@@ -123,7 +142,11 @@ test("delete_old_events deletes only events that have already ended", async () =
 test("delete_old_events skips events the provider refuses to delete and continues with the rest", async () => {
   const { calendar, deleted } = fakeCalendar(
     [
-      event("past-timed", { allDay: false, value: "2026-09-24T08:00:00Z" }, { allDay: false, value: "2026-09-24T09:00:00Z" }),
+      event(
+        "past-timed",
+        { allDay: false, value: "2026-09-24T08:00:00Z" },
+        { allDay: false, value: "2026-09-24T09:00:00Z" },
+      ),
       event("past-birthday", { allDay: true, value: "2026-09-22" }, { allDay: true, value: "2026-09-23" }),
     ],
     { undeletable: ["past-birthday"] },
@@ -138,7 +161,11 @@ test("delete_old_events skips events the provider refuses to delete and continue
 
 test("delete_old_events skips a known non-deletable eventType without even attempting the call", async () => {
   const { calendar, deleted, deleteAttempts } = fakeCalendar([
-    event("past-timed", { allDay: false, value: "2026-09-24T08:00:00Z" }, { allDay: false, value: "2026-09-24T09:00:00Z" }),
+    event(
+      "past-timed",
+      { allDay: false, value: "2026-09-24T08:00:00Z" },
+      { allDay: false, value: "2026-09-24T09:00:00Z" },
+    ),
     event("past-birthday", { allDay: true, value: "2026-09-22" }, { allDay: true, value: "2026-09-23" }, "birthday"),
   ]);
   const tools = createCalendarTools(calendar, { timezone: "UTC", now: () => NOW });
@@ -181,7 +208,10 @@ test("notes tools add, list, remove and remove all for the bound user", async ()
   await findTool(tools, "add_note").execute({ text: "rent" });
   const listed = JSON.parse(await findTool(tools, "list_notes").execute({ query: "market" })) as { text: string }[];
 
-  assert.deepEqual(listed.map((note) => note.text), ["milk"]);
+  assert.deepEqual(
+    listed.map((note) => note.text),
+    ["milk"],
+  );
   assert.equal(await findTool(tools, "remove_note").execute({ id: 999 }), '{"removed":false}');
   assert.equal(await findTool(tools, "remove_all_notes").execute({}), '{"removed":2}');
   assert.equal((db.prepare("SELECT COUNT(*) AS n FROM notes").get() as { n: number }).n, 1);
@@ -195,8 +225,13 @@ test("preferences tools add, update and remove the bound user's preferences", as
   store.add(2, "Other user's rule");
   const tools = createPreferencesTools(store, 1);
 
-  const added = JSON.parse(await findTool(tools, "add_preference").execute({ text: "Delete without asking." })) as { id: number };
-  assert.equal(await findTool(tools, "update_preference").execute({ id: added.id, text: "Ask before deleting." }), '{"updated":true}');
+  const added = JSON.parse(await findTool(tools, "add_preference").execute({ text: "Delete without asking." })) as {
+    id: number;
+  };
+  assert.equal(
+    await findTool(tools, "update_preference").execute({ id: added.id, text: "Ask before deleting." }),
+    '{"updated":true}',
+  );
   assert.deepEqual(store.list(1), [{ id: added.id, text: "Ask before deleting." }]);
 
   assert.equal(await findTool(tools, "remove_preference").execute({ id: added.id }), '{"removed":true}');
@@ -212,4 +247,3 @@ test("add_preference rejects text longer than the limit", async () => {
 
   await assert.rejects(findTool(tools, "add_preference").execute({ text: "x".repeat(301) }), /Invalid arguments/);
 });
-

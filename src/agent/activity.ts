@@ -112,4 +112,3 @@ export function joinText(content: { type: string; text?: string }[]): string {
     .join("\n")
     .trim();
 }
-

@@ -152,4 +152,3 @@ function toCalendarError(error: unknown): CalendarError {
 
   return new CalendarError("unknown", message, { cause: error });
 }
-

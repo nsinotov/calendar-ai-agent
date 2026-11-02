@@ -48,4 +48,3 @@ test("summaries are isolated per user and clear() affects only one", () => {
   assert.equal(store.get(1), null);
   assert.equal(store.get(2), "User two.");
 });
-

@@ -19,9 +19,7 @@ export class LoggingLlmProvider implements LlmProvider {
     const startedAt = Date.now();
     try {
       const response = await this.inner.complete(request);
-      const toolCalls = response.content.filter(
-        (block): block is ToolCallBlock => block.type === "tool_call",
-      );
+      const toolCalls = response.content.filter((block): block is ToolCallBlock => block.type === "tool_call");
       this.logger.info("llm.response", {
         stopReason: response.stopReason,
         inputTokens: response.usage.inputTokens,
@@ -42,4 +40,3 @@ export class LoggingLlmProvider implements LlmProvider {
     }
   }
 }
-

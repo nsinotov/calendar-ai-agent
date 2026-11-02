@@ -12,7 +12,10 @@ const DEFAULT_OLD_EVENTS_ACTION = "keep";
 const DEFAULT_OLD_EVENTS_RETENTION_DAYS = 30;
 
 const timeOfDay = (fallback: string) =>
-  z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:MM").default(fallback);
+  z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Expected HH:MM")
+    .default(fallback);
 
 // Onboarding steps and the settings fields each one covers. A step counts as set once the
 // user answered it (a value or "keep the default"), so the agent knows what is still open.
@@ -79,9 +82,7 @@ export function remainingOnboardingSteps(settings: UserSettings): OnboardingStep
 
 // Steps whose settings appear in the patch.
 export function onboardingStepsCovering(fields: readonly string[]): OnboardingStep[] {
-  return ONBOARDING_STEPS.filter((step) =>
-    ONBOARDING_STEP_FIELDS[step].some((field) => fields.includes(field)),
-  );
+  return ONBOARDING_STEPS.filter((step) => ONBOARDING_STEP_FIELDS[step].some((field) => fields.includes(field)));
 }
 
 interface SettingsRow {
@@ -99,9 +100,8 @@ export class SqliteUserSettingsStore implements UserSettingsStore {
   }
 
   get(userId: number): UserSettings {
-    const row = this.db
-      .prepare("SELECT settings FROM user_settings WHERE telegram_user_id = ?")
-      .get(userId) as SettingsRow | undefined;
+    const row = this.db.prepare("SELECT settings FROM user_settings WHERE telegram_user_id = ?").get(userId) as
+      SettingsRow | undefined;
 
     if (!row) {
       return this.schema.parse({});
@@ -133,4 +133,3 @@ export class SqliteUserSettingsStore implements UserSettingsStore {
     return this.update(userId, { onboarding });
   }
 }
-

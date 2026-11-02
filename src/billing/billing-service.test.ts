@@ -55,7 +55,7 @@ test("the low-balance warning goes to admins once per crossing", () => {
   service.recordSuccess(usage);
 
   assert.equal(admin.length, 1);
-  assert.match(admin[0]!, /Low LLM balance/);
+  assert.match(admin[0], /Low LLM balance/);
 });
 
 test("the low-balance warning is re-armed after the balance is raised", () => {
@@ -118,4 +118,3 @@ test("during an outage requests are blocked except one probe per interval", () =
 test("requests are never blocked without an outage", () => {
   assert.equal(setup().service.blocksRequests(), false);
 });
-

@@ -50,4 +50,3 @@ export class LoggingMessagingProvider implements MessagingProvider {
     }
   }
 }
-

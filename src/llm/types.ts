@@ -58,4 +58,3 @@ export interface LlmResponse {
 export interface LlmProvider {
   complete(request: LlmRequest): Promise<LlmResponse>;
 }
-

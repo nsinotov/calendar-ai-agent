@@ -18,9 +18,8 @@ export class SqliteActivityMemoryStore implements ActivityMemoryStore {
   constructor(private readonly db: DatabaseSync) {}
 
   get(userId: number): string | null {
-    const row = this.db
-      .prepare("SELECT summary FROM user_activity WHERE telegram_user_id = ?")
-      .get(userId) as ActivityRow | undefined;
+    const row = this.db.prepare("SELECT summary FROM user_activity WHERE telegram_user_id = ?").get(userId) as
+      ActivityRow | undefined;
 
     return row?.summary ?? null;
   }
@@ -45,4 +44,3 @@ export class SqliteActivityMemoryStore implements ActivityMemoryStore {
     this.db.prepare("DELETE FROM user_activity WHERE telegram_user_id = ?").run(userId);
   }
 }
-

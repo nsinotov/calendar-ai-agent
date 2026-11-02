@@ -45,7 +45,10 @@ export function createEventReminderJob(deps: EventReminderJobDeps): Job {
           cache.set(userId, { fetchedAt: nowMs, events: cached?.events ?? [] });
           throw error;
         }
-        cached = { fetchedAt: nowMs, events: events.filter((event) => !event.start.allDay && event.status !== "cancelled") };
+        cached = {
+          fetchedAt: nowMs,
+          events: events.filter((event) => !event.start.allDay && event.status !== "cancelled"),
+        };
         cache.set(userId, cached);
         for (const event of cached.events) {
           if (deps.sent.sentAt(userId, seenKey(event)) === null) {
@@ -56,7 +59,9 @@ export function createEventReminderJob(deps: EventReminderJobDeps): Job {
 
       for (const event of cached.events) {
         const startMs = Date.parse(event.start.value);
-        const lead = deps.reminders.get(userId, event.id) ?? (settings.eventReminderEnabled ? settings.eventReminderMinutesBefore : null);
+        const lead =
+          deps.reminders.get(userId, event.id) ??
+          (settings.eventReminderEnabled ? settings.eventReminderMinutesBefore : null);
         if (lead === null || startMs <= nowMs) {
           continue;
         }
@@ -77,7 +82,6 @@ export function createEventReminderJob(deps: EventReminderJobDeps): Job {
     },
   };
 }
-
 
 function seenKey(event: CalendarEvent): string {
   return `seen:${event.id}:${event.start.value}`;

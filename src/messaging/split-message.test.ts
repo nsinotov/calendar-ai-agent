@@ -25,4 +25,3 @@ test("no chunk exceeds the limit", () => {
     assert.ok(chunk.length <= 12);
   }
 });
-

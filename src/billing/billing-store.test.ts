@@ -47,4 +47,3 @@ test("the state survives reopening the store on the same database", () => {
 
   assert.equal(new SqliteBillingStore(db).get().balanceUsd, 5);
 });
-

@@ -41,7 +41,6 @@ test("pruneOlderThan() drops only old marks", () => {
   assert.equal(store.has(1, "new"), true);
 });
 
-
 test("sentAt() returns the first mark time, or null", () => {
   const { db, store } = testStore();
   assert.equal(store.sentAt(1, "k"), null);

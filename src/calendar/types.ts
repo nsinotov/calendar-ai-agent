@@ -44,4 +44,3 @@ export interface CalendarProvider {
   // events without an API round trip; deleteEvent is still the source of truth on a single call.
   canDelete(event: CalendarEvent): boolean;
 }
-

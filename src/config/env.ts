@@ -114,8 +114,7 @@ export const env = envSchema
     }
     if (
       value.LLM_BUDGET_USD !== undefined &&
-      (value.LLM_INPUT_PRICE_PER_MTOK === undefined ||
-        value.LLM_OUTPUT_PRICE_PER_MTOK === undefined)
+      (value.LLM_INPUT_PRICE_PER_MTOK === undefined || value.LLM_OUTPUT_PRICE_PER_MTOK === undefined)
     ) {
       ctx.addIssue({
         code: "custom",
@@ -130,4 +129,3 @@ export const env = envSchema
 function withoutEmptyValues(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   return Object.fromEntries(Object.entries(source).filter(([, value]) => value !== ""));
 }
-

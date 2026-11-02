@@ -43,4 +43,3 @@ export class AccessControl {
     this.rejected.set(userId, this.now());
   }
 }
-

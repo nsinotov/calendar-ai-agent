@@ -60,4 +60,3 @@ test("logs and rethrows on failure", async () => {
   assert.equal(message, "llm.error");
   assert.equal(context?.kind, "insufficient_credits");
 });
-

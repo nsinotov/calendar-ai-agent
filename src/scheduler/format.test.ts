@@ -20,7 +20,10 @@ const holiday: CalendarEvent = {
 };
 
 test("the daily summary lists local times and places", () => {
-  assert.equal(formatDailySummary([dentist, holiday], "Europe/Kyiv"), "Your events for today:\n- 09:00-09:30: Dentist (Clinic)\n- all day: Holiday");
+  assert.equal(
+    formatDailySummary([dentist, holiday], "Europe/Kyiv"),
+    "Your events for today:\n- 09:00-09:30: Dentist (Clinic)\n- all day: Holiday",
+  );
 });
 
 test("the weekly summary groups events by local date", () => {
@@ -31,9 +34,11 @@ test("the weekly summary groups events by local date", () => {
 });
 
 test("the event reminder names the title, start time and remaining minutes", () => {
-  assert.equal(formatEventReminder(dentist, 60, "Europe/Kyiv"), 'Reminder: "Dentist" starts at 09:00 (in 60 min). Place: Clinic.');
+  assert.equal(
+    formatEventReminder(dentist, 60, "Europe/Kyiv"),
+    'Reminder: "Dentist" starts at 09:00 (in 60 min). Place: Clinic.',
+  );
 });
-
 
 test("empty periods produce a plain nothing-planned text", () => {
   assert.equal(formatDailySummary([], "Europe/Kyiv"), "You have no events today.");
