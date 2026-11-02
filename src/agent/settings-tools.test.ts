@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import { ONBOARDING_STEPS, remainingOnboardingSteps, SqliteUserSettingsStore } from "../memory/user-settings-store.js";
 import { createSettingsTools } from "./settings-tools.js";
 import type { Tool } from "./tool.js";
 
 function setup() {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0), (2, 0)").run();
   const store = new SqliteUserSettingsStore(db);
   const tools = createSettingsTools({ settings: store, userId: 1, calendarProviders: ["google"] });

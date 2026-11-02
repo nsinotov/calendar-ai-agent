@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import { SqliteBillingStore } from "./billing-store.js";
 
 function testStore(): SqliteBillingStore {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
 
   return new SqliteBillingStore(db);
 }
@@ -42,7 +42,7 @@ test("setBalance() clears the low-balance and outage flags", () => {
 
 test("the state survives reopening the store on the same database", () => {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   new SqliteBillingStore(db).setBalance(5);
 
   assert.equal(new SqliteBillingStore(db).get().balanceUsd, 5);

@@ -4,7 +4,7 @@ import { test } from "node:test";
 import { Agent } from "../agent/index.js";
 import { BillingService, OUTAGE_USER_TEXT } from "../billing/billing-service.js";
 import { SqliteBillingStore } from "../billing/billing-store.js";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import { LlmError } from "../llm/errors.js";
 import type { LlmProvider } from "../llm/types.js";
 import { SqliteConversationStore } from "../memory/conversation-store.js";
@@ -16,7 +16,7 @@ import { createMessageHandler } from "./message-handler.js";
 
 function setup(llm: LlmProvider) {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   const users = new SqliteUserStore(db);
   users.upsert(1, "user");
   users.upsert(2, "admin");

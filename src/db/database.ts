@@ -94,11 +94,37 @@ export const SCHEMA = `
   );
 `;
 
+// Schema changes, applied in order; PRAGMA user_version holds how many are applied.
+// Only append: never edit or reorder a migration that may already have run.
+export const MIGRATIONS: readonly string[] = [
+  // 1: the initial schema. Its IF NOT EXISTS clauses also adopt databases created before versioning.
+  SCHEMA,
+];
+
+export function migrate(db: DatabaseSync, migrations: readonly string[] = MIGRATIONS): void {
+  const { user_version: current } = db.prepare("PRAGMA user_version").get() as { user_version: number };
+  if (current > migrations.length) {
+    throw new Error(`Database schema version ${current} is newer than this app supports (${migrations.length})`);
+  }
+
+  for (let version = current + 1; version <= migrations.length; version++) {
+    db.exec("BEGIN");
+    try {
+      db.exec(migrations[version - 1]);
+      db.exec(`PRAGMA user_version = ${version}`);
+      db.exec("COMMIT");
+    } catch (error) {
+      db.exec("ROLLBACK");
+      throw error;
+    }
+  }
+}
+
 export function openDatabase(dataDir: string): DatabaseSync {
   mkdirSync(dataDir, { recursive: true });
   const db = new DatabaseSync(join(dataDir, "agent.db"));
   db.exec("PRAGMA journal_mode = WAL");
-  db.exec(SCHEMA);
+  migrate(db);
 
   return db;
 }

@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import { SqliteUserStore } from "./user-store.js";
 
 function testStore(): SqliteUserStore {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
 
   return new SqliteUserStore(db);
 }
@@ -46,7 +46,7 @@ test("listAdmins() returns only admins", () => {
 
 test("users inserted without a role default to user", () => {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0)").run();
 
   assert.equal(new SqliteUserStore(db).get(1)?.role, "user");
@@ -54,7 +54,7 @@ test("users inserted without a role default to user", () => {
 
 test("the database rejects an unknown role", () => {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
 
   assert.throws(() => db.prepare("INSERT INTO users (telegram_user_id, role, created_at) VALUES (1, 'root', 0)").run());
 });

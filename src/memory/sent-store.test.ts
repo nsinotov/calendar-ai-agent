@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import { SqliteSentStore } from "./sent-store.js";
 
 function testStore(): { db: DatabaseSync; store: SqliteSentStore } {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0), (2, 0)").run();
 
   return { db, store: new SqliteSentStore(db) };

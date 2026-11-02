@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 import type { CalendarProvider } from "../calendar/index.js";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import type { Logger } from "../logging/index.js";
 import { SqliteUserSettingsStore } from "../memory/user-settings-store.js";
 import { SqliteUserStore } from "../memory/user-store.js";
@@ -13,7 +13,7 @@ const calendar = {} as CalendarProvider;
 
 function setup(resolve: (userId: number) => CalendarProvider | null, jobs: Job[], onTick?: () => void) {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   const users = new SqliteUserStore(db);
   users.upsert(1, "user");
   users.upsert(2, "user");

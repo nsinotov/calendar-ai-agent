@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 import type { CalendarEvent, CalendarProvider, EventInput } from "../calendar/index.js";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import { SqlitePreferencesStore } from "../memory/preferences-store.js";
 import { SqliteNotesProvider } from "../notes/sqlite-provider.js";
 import { createCalendarTools } from "./calendar-tools.js";
@@ -194,7 +194,7 @@ test("delete_old_events uses the user's timezone for all-day events", async () =
 
 function notesTools(): { tools: Tool[]; db: DatabaseSync } {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0), (2, 0)").run();
 
   return { tools: createNotesTools(new SqliteNotesProvider(db), 1), db };
@@ -219,7 +219,7 @@ test("notes tools add, list, remove and remove all for the bound user", async ()
 
 test("preferences tools add, update and remove the bound user's preferences", async () => {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0), (2, 0)").run();
   const store = new SqlitePreferencesStore(db);
   store.add(2, "Other user's rule");
@@ -241,7 +241,7 @@ test("preferences tools add, update and remove the bound user's preferences", as
 
 test("add_preference rejects text longer than the limit", async () => {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0)").run();
   const tools = createPreferencesTools(new SqlitePreferencesStore(db), 1);
 

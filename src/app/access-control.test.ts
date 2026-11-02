@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import { SqliteUserStore } from "../memory/user-store.js";
 import { AccessControl } from "./access-control.js";
 
 function testAccess(now: () => number = () => 0): AccessControl {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   const users = new SqliteUserStore(db);
   users.upsert(1, "user");
 

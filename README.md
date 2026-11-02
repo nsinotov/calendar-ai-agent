@@ -170,7 +170,6 @@ Not covered automatically: the Telegram webhook server and long polling, and rea
 
 ## Known limitations
 
-- No database migrations: a new column needs a manual change to an existing database.
 - Static replies (not registered, out of credits, errors) and admin messages are English only, since the LLM may be unavailable to translate them.
 - A reminder lead time over 48 hours is not honoured, because the reminder job only looks 48 hours ahead.
 - The spend estimate ignores prompt-cache discounts.

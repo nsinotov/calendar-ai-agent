@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import {
   ONBOARDING_STEP_FIELDS,
   ONBOARDING_STEPS,
@@ -12,7 +12,7 @@ import {
 
 function testStore(): SqliteUserSettingsStore {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0), (2, 0)").run();
 
   return new SqliteUserSettingsStore(db);
@@ -31,7 +31,7 @@ test("get() returns schema defaults when no row exists", () => {
 
 test("the default context retention is configurable per store instance", () => {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0)").run();
   const store = new SqliteUserSettingsStore(db, 30);
 
@@ -51,7 +51,7 @@ test("update() merges a partial patch onto existing settings", () => {
 
 test("get() backfills a field missing from an older stored blob", () => {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0)").run();
   // Simulates a settings blob written before `oldEventsAction` existed.
   db.prepare("INSERT INTO user_settings (telegram_user_id, settings, updated_at) VALUES (1, ?, 0)").run(

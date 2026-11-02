@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import type { LlmProvider, LlmRequest, LlmResponse } from "../llm/types.js";
 import { SqliteConversationStore } from "../memory/conversation-store.js";
 import { Agent } from "./agent.js";
@@ -27,7 +27,7 @@ function scriptedLlm(responses: LlmResponse[]): { llm: LlmProvider; requests: Ll
 
 function testConversations(): SqliteConversationStore {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0)").run();
 
   return new SqliteConversationStore(db);

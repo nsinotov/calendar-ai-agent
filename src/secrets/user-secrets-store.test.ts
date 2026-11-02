@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import { SqliteUserSecretsStore } from "./user-secrets-store.js";
 
 function testStore(): SqliteUserSecretsStore {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0), (2, 0)").run();
 
   return new SqliteUserSecretsStore(db, randomBytes(32));

@@ -20,5 +20,6 @@ pnpm test
 - Follow the code style in [CLAUDE.md](CLAUDE.md).
 - Add or update tests with every change. Tests sit next to the code as `*.test.ts` and make no network calls; fake the LLM, calendar and messenger.
 - A new LLM, calendar, messenger or storage backend goes behind the existing interface and its factory (see [Architecture](README.md#architecture)); nothing outside the factory should name the provider.
+- Change the database schema only by appending a migration to `MIGRATIONS` in `src/db/database.ts`; never edit one that may already have run.
 - Keep each commit to one change, with a short message saying what it does, e.g. "Send missed event reminders late with an apology".
 - Update the README when behaviour, configuration or commands change.

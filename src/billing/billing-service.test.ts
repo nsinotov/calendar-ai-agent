@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
-import { SCHEMA } from "../db/database.js";
+import { migrate } from "../db/database.js";
 import { LlmError } from "../llm/errors.js";
 import { BillingService, type BillingConfig, type Notifier } from "./billing-service.js";
 import { SqliteBillingStore } from "./billing-store.js";
@@ -10,7 +10,7 @@ const usage = { inputTokens: 1_000_000, outputTokens: 0 };
 
 function setup(overrides: Partial<BillingConfig> = {}, now: () => number = () => 0) {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   const store = new SqliteBillingStore(db);
   const admin: string[] = [];
   const everyone: string[] = [];

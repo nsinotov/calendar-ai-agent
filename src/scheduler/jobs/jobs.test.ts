@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { test } from "node:test";
 import type { CalendarEvent, CalendarProvider, ListEventsOptions } from "../../calendar/index.js";
-import { SCHEMA } from "../../db/database.js";
+import { migrate } from "../../db/database.js";
 import type { LlmProvider } from "../../llm/types.js";
 import { SqliteEventReminderStore } from "../../memory/event-reminder-store.js";
 import { SqliteSentStore } from "../../memory/sent-store.js";
@@ -14,7 +14,7 @@ import { createSummaryJob } from "./summary-job.js";
 
 function setup() {
   const db = new DatabaseSync(":memory:");
-  db.exec(SCHEMA);
+  migrate(db);
   db.prepare("INSERT INTO users (telegram_user_id, created_at) VALUES (1, 0), (2, 0)").run();
   const settingsStore = new SqliteUserSettingsStore(db);
   const sent = new SqliteSentStore(db);
