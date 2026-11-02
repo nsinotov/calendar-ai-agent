@@ -1,5 +1,7 @@
 # Calendar AI Agent
 
+[![CI](https://github.com/nsinotov/calendar-ai-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/nsinotov/calendar-ai-agent/actions/workflows/ci.yml)
+
 A Telegram assistant that manages Google Calendar and a personal notes list through natural language, powered by Claude or OpenAI.
 
 ## Features

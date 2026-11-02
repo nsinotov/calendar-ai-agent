@@ -2,6 +2,7 @@
   "name": "calendar-ai-agent",
   "version": "0.1.0",
   "license": "MIT",
+  "packageManager": "pnpm@12.6.0",
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file=.env src/index.ts",
