@@ -174,6 +174,14 @@ Not covered automatically: the Telegram webhook server and long polling, and rea
 - The spend estimate ignores prompt-cache discounts.
 - Tool calls from one model turn run in parallel; dependent calls (e.g. create an event, then update it) rely on the model making them in separate turns.
 
+## Built with Claude Code
+
+The code was written with [Claude Code](https://claude.com/claude-code), Anthropic's coding agent; commits carry a `Co-Authored-By: Claude` trailer.
+
+Claude wrote the code in small steps. I set the requirements, made the product and architecture decisions, reviewed and approved every change and commit, and tested the bot with real Telegram, Google Calendar and LLM accounts.
+
+The code style rules the agent follows are in [`CLAUDE.md`](CLAUDE.md).
+
 ## License
 
 [MIT](LICENSE)
