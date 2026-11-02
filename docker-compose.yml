@@ -18,7 +18,8 @@ services:
     profiles: [webhook]
     restart: unless-stopped
     depends_on:
-      - agent
+      agent:
+        condition: service_healthy
     environment:
       DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
       SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-${DOMAIN}}

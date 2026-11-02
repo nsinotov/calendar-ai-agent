@@ -1,3 +1,4 @@
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Agent, generateSuggestions, proactiveMessage } from "./agent/index.js";
 import { BillingLlmProvider } from "./billing/billing-llm-provider.js";
@@ -153,6 +154,14 @@ const scheduler = new Scheduler(
       createCleanupJob({ sent: storage.sent, reminders: storage.eventReminders }),
       ...(env.SUGGESTIONS_ENABLED ? [createActivityJob({ sent: storage.sent, activity: activityDeps })] : []),
     ],
+    // The Docker HEALTHCHECK reads this file's age.
+    onTick: () => {
+      try {
+        writeFileSync(join(env.DATA_DIR, "heartbeat"), new Date().toISOString());
+      } catch (error) {
+        logger.warn("scheduler.heartbeat", { message: error instanceof Error ? error.message : String(error) });
+      }
+    },
   },
   SCHEDULER_TICK_MS,
 );

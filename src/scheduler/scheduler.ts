@@ -11,6 +11,8 @@ export interface SchedulerDeps {
   jobs: Job[];
   logger: Logger;
   now?: () => Date;
+  // Called after every finished tick, e.g. to write a heartbeat for a container health check.
+  onTick?: () => void;
 }
 
 // Ticks on a fixed interval; each tick runs every job for every user that has a calendar.
@@ -47,6 +49,7 @@ export class Scheduler {
       for (const { id: userId } of this.deps.users.list()) {
         await this.runUser(userId, now);
       }
+      this.deps.onTick?.();
     } finally {
       this.running = false;
     }

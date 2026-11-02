@@ -11,7 +11,7 @@ import type { Job } from "./types.js";
 
 const calendar = {} as CalendarProvider;
 
-function setup(resolve: (userId: number) => CalendarProvider | null, jobs: Job[]) {
+function setup(resolve: (userId: number) => CalendarProvider | null, jobs: Job[], onTick?: () => void) {
   const db = new DatabaseSync(":memory:");
   db.exec(SCHEMA);
   const users = new SqliteUserStore(db);
@@ -25,7 +25,7 @@ function setup(resolve: (userId: number) => CalendarProvider | null, jobs: Job[]
     debug() {},
   };
   const scheduler = new Scheduler(
-    { users, settings: new SqliteUserSettingsStore(db), resolveCalendar: resolve, jobs, logger },
+    { users, settings: new SqliteUserSettingsStore(db), resolveCalendar: resolve, jobs, logger, onTick },
     60_000,
   );
 
@@ -40,6 +40,33 @@ test("every job runs for every user that has a calendar", async () => {
   await scheduler.tick();
 
   assert.deepEqual(seen, ["j1"]);
+});
+
+test("onTick runs after all jobs finish, and not for a tick skipped while another is running", async () => {
+  const seen: string[] = [];
+  let open = () => {};
+  const gate = new Promise<void>((resolve) => {
+    open = resolve;
+  });
+  const job: Job = {
+    name: "j",
+    run: async ({ userId }) => {
+      seen.push(`j${userId}`);
+      await gate;
+    },
+  };
+  const { scheduler } = setup(
+    (userId) => (userId === 1 ? calendar : null),
+    [job],
+    () => void seen.push("tick"),
+  );
+
+  const first = scheduler.tick();
+  await scheduler.tick();
+  open();
+  await first;
+
+  assert.deepEqual(seen, ["j1", "tick"]);
 });
 
 test("a failing job is logged and the other jobs and users still run", async () => {

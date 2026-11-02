@@ -22,5 +22,8 @@ COPY package.json ./
 # A named volume mounted here inherits this ownership, so the non-root user can write the database.
 RUN mkdir -p /app/data && chown node:node /app/data
 USER node
+# Healthy while the scheduler keeps finishing its 60-second ticks (src/index.ts writes the heartbeat).
+HEALTHCHECK --interval=60s --timeout=5s --start-period=60s --retries=3 \
+  CMD node -e "const age = Date.now() - require('fs').statSync(process.env.DATA_DIR + '/heartbeat').mtimeMs; process.exit(age < 180000 ? 0 : 1)"
 CMD ["node", "dist/index.js"]
 
