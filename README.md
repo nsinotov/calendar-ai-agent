@@ -143,7 +143,7 @@ docker compose exec agent node dist/scripts/set-balance.js 20
 - `pnpm typecheck`: type-check the project
 - `pnpm lint`: lint the project (ESLint)
 - `pnpm format`: format the project (Prettier); `pnpm format:check` only checks
-- `pnpm test`: run unit tests
+- `pnpm test`: run the tests; `pnpm test:coverage` also prints a coverage report
 
 ## Design decisions and trade-offs
 
@@ -162,7 +162,7 @@ docker compose exec agent node dist/scripts/set-balance.js 20
 
 ## Testing
 
-Unit tests use `node:test` (`pnpm test`) and sit next to the code as `*.test.ts`. They make no network calls: stores run against in-memory SQLite, providers against fake SDK clients, and the message handler and scheduler against fake messaging, LLM and calendar providers with an injectable clock. Every multi-user store has a test that one user can't see another user's data. An end-to-end test (`src/app/message-flow.e2e.test.ts`) wires the real handler, agent, tools, storage and billing as in production and drives them with a scripted LLM, an in-memory calendar and a fake messenger. CI runs the format check, linter, type check, tests and build on every push to `main` and every pull request against it.
+Unit tests use `node:test` (`pnpm test`) and sit next to the code as `*.test.ts`. They make no network calls: stores run against in-memory SQLite, providers against fake SDK clients, and the message handler and scheduler against fake messaging, LLM and calendar providers with an injectable clock. Every multi-user store has a test that one user can't see another user's data. An end-to-end test (`src/app/message-flow.e2e.test.ts`) wires the real handler, agent, tools, storage and billing as in production and drives them with a scripted LLM, an in-memory calendar and a fake messenger. `pnpm test:coverage` adds Node's built-in coverage report. CI runs the format check, linter, type check, tests and build on every push to `main` and every pull request against it.
 
 Not covered automatically: the Telegram webhook server and long polling, and real Google and LLM calls.
 

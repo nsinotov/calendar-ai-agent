@@ -13,6 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "tsx --test \"src/**/*.test.ts\"",
+    "test:coverage": "tsx --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" \"src/**/*.test.ts\"",
     "add-user": "tsx --env-file=.env src/scripts/add-user.ts",
     "set-balance": "tsx --env-file=.env src/scripts/set-balance.ts"
   },
