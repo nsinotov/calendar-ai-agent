@@ -174,7 +174,6 @@ Not covered automatically: the Telegram webhook server and long polling, and rea
 - Static replies (not registered, out of credits, errors) and admin messages are English only, since the LLM may be unavailable to translate them.
 - A reminder lead time over 48 hours is not honoured, because the reminder job only looks 48 hours ahead.
 - The spend estimate ignores prompt-cache discounts.
-- Tool calls from one model turn run in parallel; dependent calls (e.g. create an event, then update it) rely on the model making them in separate turns.
 
 ## Built with Claude Code
 

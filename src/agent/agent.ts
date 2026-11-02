@@ -45,7 +45,12 @@ export class Agent {
         return joinText(response.content);
       }
 
-      const results = await Promise.all(calls.map((call) => runTool(toolsByName, call)));
+      // One at a time, in the model's order, so writes to the same event or note can't race.
+      const results: ToolResultBlock[] = [];
+
+      for (const call of calls) {
+        results.push(await runTool(toolsByName, call));
+      }
       this.record(userId, messages, { role: "user", content: results });
     }
 

@@ -100,6 +100,47 @@ test("tool failures and unknown tools become error results instead of throwing",
   );
 });
 
+test("tool calls from one turn run one at a time, in the model's order", async () => {
+  const log: string[] = [];
+  const slowTool: Tool = defineTool(
+    {
+      name: "slow",
+      description: "Logs its start and end.",
+      inputSchema: { type: "object", properties: { name: { type: "string" } }, required: ["name"] },
+    },
+    z.object({ name: z.string() }),
+    async ({ name }) => {
+      log.push(`start ${name}`);
+      await new Promise((resolve) => setTimeout(resolve, name === "first" ? 20 : 0));
+      log.push(`end ${name}`);
+
+      return name;
+    },
+  );
+  const { llm, requests } = scriptedLlm([
+    {
+      content: [
+        { type: "tool_call", id: "c1", name: "slow", input: { name: "first" } },
+        { type: "tool_call", id: "c2", name: "slow", input: { name: "second" } },
+      ],
+      stopReason: "tool_use",
+      usage,
+    },
+    { content: [{ type: "text", text: "Done" }], stopReason: "end_turn", usage },
+  ]);
+  const agent = new Agent(llm, testConversations());
+
+  await agent.reply(1, "go", { system: "s", tools: [slowTool], retentionDays: 7, toolResultRetentionMinutes: 60 });
+
+  assert.deepEqual(log, ["start first", "end first", "start second", "end second"]);
+  const results = requests[1]?.messages.at(-1)?.content;
+  assert.ok(Array.isArray(results));
+  assert.deepEqual(
+    results.map((block) => (block.type === "tool_result" ? block.callId : null)),
+    ["c1", "c2"],
+  );
+});
+
 test("reply() gives up after the step limit", async () => {
   const loop: LlmResponse = {
     content: [{ type: "tool_call", id: "c", name: "echo", input: { text: "x" } }],
