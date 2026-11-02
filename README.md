@@ -160,6 +160,8 @@ docker compose exec agent node dist/scripts/set-balance.js 20
 - **Risky actions are guarded in the prompt.** Bulk deletions need confirmation, and event titles and notes are declared as data, not instructions.
 - **Privacy-sensitive features are opt-in.** Activity memory and suggestions send events and notes to the LLM daily, so they are behind `SUGGESTIONS_ENABLED`, off by default.
 
+The threat model, the data sent to the LLM and key rotation are described in [SECURITY.md](SECURITY.md).
+
 ## Testing
 
 Unit tests use `node:test` (`pnpm test`) and sit next to the code as `*.test.ts`. They make no network calls: stores run against in-memory SQLite, providers against fake SDK clients, and the message handler and scheduler against fake messaging, LLM and calendar providers with an injectable clock. Every multi-user store has a test that one user can't see another user's data. An end-to-end test (`src/app/message-flow.e2e.test.ts`) wires the real handler, agent, tools, storage and billing as in production and drives them with a scripted LLM, an in-memory calendar and a fake messenger. `pnpm test:coverage` adds Node's built-in coverage report. CI runs the format check, linter, type check, tests and build on every push to `main` and every pull request against it.
