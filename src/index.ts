@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { Agent, generateSuggestions } from "./agent/index.js";
+import { Agent, generateSuggestions, proactiveMessage } from "./agent/index.js";
 import { BillingLlmProvider } from "./billing/billing-llm-provider.js";
 import { BillingService } from "./billing/billing-service.js";
 import { createMessagingNotifier } from "./billing/notifier.js";
@@ -124,7 +124,11 @@ messaging.onMessage(
   }),
 );
 
-const send = (userId: number, text: string) => messaging.send(userId, text);
+// Scheduled messages go into the chat history too, so the agent can follow up on them.
+const send = async (userId: number, text: string) => {
+  await messaging.send(userId, text);
+  storage.conversations.append(userId, proactiveMessage(text));
+};
 const activityDeps = { llm, notes: storage.notes, store: storage.activity };
 const suggestions = env.SUGGESTIONS_ENABLED
   ? ({ userId, settings, calendar, now }: JobContext) =>

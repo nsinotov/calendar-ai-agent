@@ -4,6 +4,14 @@ import type { Tool } from "./tool.js";
 
 const DEFAULT_MAX_STEPS = 10;
 
+export const PROACTIVE_MESSAGE_MARKER = "[Sent by you automatically]";
+
+// Summaries and reminders the app sent on its own. Stored as user text (marked as yours) rather than an assistant
+// turn, because history must start with a user message and may begin right after such a message.
+export function proactiveMessage(text: string): Message {
+  return { role: "user", content: `${PROACTIVE_MESSAGE_MARKER}\n${text}` };
+}
+
 export interface AgentContext {
   system: string;
   tools: Tool[];

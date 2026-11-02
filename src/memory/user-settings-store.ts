@@ -23,7 +23,7 @@ export const ONBOARDING_STEP_FIELDS = {
   weekStart: ["weekStart"],
   contextRetention: ["contextRetentionDays"],
   weeklyReminder: ["weeklyReminderEnabled", "weeklyReminderTime"],
-  dailyReminder: ["dailyReminderEnabled", "dailyReminderTime"],
+  dailyReminder: ["dailyReminderEnabled", "dailyReminderTime", "dailyReminderWhenEmpty"],
   eventReminder: ["eventReminderEnabled", "eventReminderMinutesBefore"],
   oldEvents: ["oldEventsAction", "oldEventsRetentionDays"],
 } as const;
@@ -52,6 +52,8 @@ function buildUserSettingsSchema(defaultContextRetentionDays: number) {
     weeklyReminderTime: timeOfDay(DEFAULT_REMINDER_TIME),
     dailyReminderEnabled: z.boolean().default(DEFAULT_REMINDER_ENABLED),
     dailyReminderTime: timeOfDay(DEFAULT_REMINDER_TIME),
+    // Whether the daily summary is still sent on a day with no events.
+    dailyReminderWhenEmpty: z.boolean().default(DEFAULT_REMINDER_ENABLED),
     eventReminderEnabled: z.boolean().default(DEFAULT_REMINDER_ENABLED),
     eventReminderMinutesBefore: z.number().int().positive().default(DEFAULT_EVENT_REMINDER_MINUTES_BEFORE),
 

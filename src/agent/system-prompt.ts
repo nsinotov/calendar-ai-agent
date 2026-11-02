@@ -1,4 +1,5 @@
 import type { Preference } from "../memory/preferences-store.js";
+import { PROACTIVE_MESSAGE_MARKER } from "./agent.js";
 import {
   remainingOnboardingSteps,
   type OnboardingStep,
@@ -38,13 +39,14 @@ export function buildSystemPrompt({
       `- The week starts on ${capitalize(settings.weekStart)}.`,
       `- Reply in ${language}, whatever language the user writes in, unless they explicitly ask for another one.`,
       settings.name
-        ? `- The user's name is ${settings.name}. Use it from time to time, not in every message.`
+        ? `- The user's name is ${settings.name}. Talk like a person in an ongoing chat: don't address the user by name in your replies. Use the name only when greeting them for the first time, or when they ask what you call them. Never start a reply with the name.`
         : "- You don't know the user's name. Never invent one.",
     ].join("\n"),
     [
       "Memory:",
       `- Chat history is kept for ${settings.contextRetentionDays} day(s).`,
       `- Calendar/tool data seen earlier in the conversation is only trusted for ${formatDuration(toolResultRetentionMinutes)} after it was fetched; past that it's treated as stale, so call the tool again instead of relying on it.`,
+      `- History messages starting with "${PROACTIVE_MESSAGE_MARKER}" are summaries and reminders you sent to the user on your own; the user didn't write them. Treat them as your own earlier messages: the user's next message often refers to them.`,
       "- If the user asks what you remember or how long you keep things, tell them these two limits.",
     ].join("\n"),
     [
@@ -73,7 +75,8 @@ const STEP_DESCRIPTIONS: Record<OnboardingStep, (settings: UserSettings) => stri
   weekStart: (s) => `first day of the week (default: ${s.weekStart})`,
   contextRetention: (s) => `how many days the conversation history is kept (default: ${s.contextRetentionDays})`,
   weeklyReminder: (s) => `weekly summary message (default: ${onOff(s.weeklyReminderEnabled)} at ${s.weeklyReminderTime})`,
-  dailyReminder: (s) => `daily summary message (default: ${onOff(s.dailyReminderEnabled)} at ${s.dailyReminderTime})`,
+  dailyReminder: (s) =>
+    `daily summary message (default: ${onOff(s.dailyReminderEnabled)} at ${s.dailyReminderTime}, ${s.dailyReminderWhenEmpty ? "also" : "not"} sent on days with no events)`,
   eventReminder: (s) =>
     `reminder before each timed event (default: ${onOff(s.eventReminderEnabled)}, ${s.eventReminderMinutesBefore} minutes before)`,
   oldEvents: (s) =>

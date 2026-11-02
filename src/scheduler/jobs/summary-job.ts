@@ -42,6 +42,12 @@ export function createSummaryJob(deps: SummaryJobDeps): Job {
       const events = (await calendar.listEvents({ timeMin: start.toISOString(), timeMax: end.toISOString() })).filter(
         (event) => event.status !== "cancelled",
       );
+      if (!weekly && events.length === 0 && !settings.dailyReminderWhenEmpty) {
+        deps.sent.mark(userId, key);
+
+        return;
+      }
+
       const draft = weekly ? formatWeeklySummary(events, settings.timezone) : formatDailySummary(events, settings.timezone);
       const parts = [await translate(deps.llm, settings.language, draft)];
       if (deps.suggestions) {
