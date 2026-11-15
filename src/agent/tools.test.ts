@@ -105,6 +105,28 @@ test("create_event rejects a date-time without a UTC offset", async () => {
   );
 });
 
+test("events returned to the model carry the weekday in the user's timezone", async () => {
+  const { calendar } = fakeCalendar([
+    // 23:30 on Monday in UTC is already Tuesday in Tokyo.
+    event("late", { allDay: false, value: "2026-11-02T23:30:00Z" }, { allDay: false, value: "2026-11-03T00:30:00Z" }),
+    event("all-day", { allDay: true, value: "2026-11-02" }, { allDay: true, value: "2026-11-03" }),
+  ]);
+  const tools = createCalendarTools(calendar, { timezone: "Asia/Tokyo" });
+
+  const listed = JSON.parse(await findTool(tools, "list_events").execute({})) as CalendarEvent[];
+  const created = JSON.parse(
+    await findTool(tools, "create_event").execute({
+      title: "Call",
+      start: "2026-11-06T10:00:00+09:00",
+      end: "2026-11-06T11:00:00+09:00",
+    }),
+  ) as CalendarEvent;
+
+  assert.deepEqual(listed[0]?.start, { allDay: false, value: "2026-11-02T23:30:00Z", weekday: "Tuesday" });
+  assert.deepEqual(listed[1]?.end, { allDay: true, value: "2026-11-03", weekday: "Tuesday" });
+  assert.deepEqual(created.start, { allDay: false, value: "2026-11-06T10:00:00+09:00", weekday: "Friday" });
+});
+
 test("update_event sends only the provided fields", async () => {
   const { calendar, updates } = fakeCalendar([
     event("e1", { allDay: true, value: "2026-10-01" }, { allDay: true, value: "2026-10-02" }),

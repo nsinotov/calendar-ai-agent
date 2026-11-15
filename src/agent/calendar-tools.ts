@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { hasEnded, type CalendarProvider, type EventTime } from "../calendar/index.js";
+import { hasEnded, type CalendarEvent, type CalendarProvider, type EventTime } from "../calendar/index.js";
 import { defineTool, type Tool } from "./tool.js";
 
 const dateTime = z.string().datetime({ offset: true });
@@ -30,7 +30,7 @@ export function createCalendarTools(
         },
       },
       z.object({ timeMin: dateTime.optional(), timeMax: dateTime.optional() }),
-      (args) => calendar.listEvents(args),
+      async (args) => (await calendar.listEvents(args)).map((event) => withWeekdays(event, options.timezone)),
     ),
     defineTool(
       {
@@ -55,12 +55,15 @@ export function createCalendarTools(
         description: z.string().optional(),
         location: z.string().optional(),
       }),
-      (args) =>
-        calendar.createEvent({
-          ...args,
-          start: toEventTime(args.start),
-          end: toEventTime(args.end),
-        }),
+      async (args) =>
+        withWeekdays(
+          await calendar.createEvent({
+            ...args,
+            start: toEventTime(args.start),
+            end: toEventTime(args.end),
+          }),
+          options.timezone,
+        ),
     ),
     defineTool(
       {
@@ -87,12 +90,15 @@ export function createCalendarTools(
         description: z.string().optional(),
         location: z.string().optional(),
       }),
-      ({ id, start, end, ...rest }) =>
-        calendar.updateEvent(id, {
-          ...rest,
-          ...(start && { start: toEventTime(start) }),
-          ...(end && { end: toEventTime(end) }),
-        }),
+      async ({ id, start, end, ...rest }) =>
+        withWeekdays(
+          await calendar.updateEvent(id, {
+            ...rest,
+            ...(start && { start: toEventTime(start) }),
+            ...(end && { end: toEventTime(end) }),
+          }),
+          options.timezone,
+        ),
     ),
     defineTool(
       {
@@ -142,4 +148,17 @@ export function createCalendarTools(
 
 function toEventTime(value: string): EventTime {
   return { allDay: !value.includes("T"), value };
+}
+
+// Models often get the weekday of a date wrong, so every event they see carries it, in the user's timezone.
+function withWeekdays(event: CalendarEvent, timezone: string) {
+  return { ...event, start: withWeekday(event.start, timezone), end: withWeekday(event.end, timezone) };
+}
+
+function withWeekday(time: EventTime, timezone: string) {
+  // A plain date has no time of day, so read it as UTC midnight and name its weekday in UTC.
+  const date = time.allDay ? new Date(`${time.value}T00:00:00Z`) : new Date(time.value);
+  const weekday = date.toLocaleDateString("en-US", { timeZone: time.allDay ? "UTC" : timezone, weekday: "long" });
+
+  return { ...time, weekday };
 }
