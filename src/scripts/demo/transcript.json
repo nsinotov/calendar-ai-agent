@@ -1,0 +1,60 @@
+{
+  "timezone": "Europe/London",
+  "messages": [
+    {
+      "from": "bot",
+      "text": "Your events for the coming week:\n\n2026-11-02:\n- 18:30-19:30: Gym\n\n2026-11-03:\n- 09:30-10:00: Team stand-up\n- 13:00-14:00: Lunch with Mark\n\n2026-11-04:\n- 17:00-17:45: Emma's piano lesson\n\n2026-11-06:\n- 20:00-22:00: Movie night\n\n2026-11-07:\n- 11:00-12:30: Kids' football match",
+      "at": "2026-11-02T08:00:00.000Z"
+    },
+    {
+      "from": "user",
+      "text": "Add book club this Thursday from 7 to 9 pm",
+      "at": "2026-11-02T08:07:00.000Z"
+    },
+    {
+      "from": "bot",
+      "text": "Done — I've added \"Book Club\" on Thursday 5 November, 19:00–21:00. Need a location or description for it?",
+      "at": "2026-11-02T08:07:00.000Z"
+    },
+    {
+      "from": "user",
+      "text": "What do I have tomorrow and next week?",
+      "at": "2026-11-02T08:08:00.000Z"
+    },
+    {
+      "from": "bot",
+      "text": "Tomorrow (Tue 3 Nov)\n- Team stand-up — 09:30–10:00\n- Lunch with Mark — 13:00–14:00\n\nNext week (Mon 9 Nov — Sun 15 Nov)\n- Quarterly review — Mon 9 Nov, 10:00–11:00\n- Dentist — Wed 11 Nov, 15:00–16:00\n- Anna’s birthday dinner — Fri 13 Nov, 19:00–21:30\n\nAll times shown in your Europe/London timezone. Want me to add reminders or show details for any event?",
+      "at": "2026-11-02T08:08:00.000Z"
+    },
+    {
+      "from": "user",
+      "text": "Cancel the dentist next week",
+      "at": "2026-11-02T08:09:00.000Z"
+    },
+    {
+      "from": "bot",
+      "text": "Done — I've cancelled your \"Dentist\" appointment on Wednesday 11 November.",
+      "at": "2026-11-02T08:09:00.000Z"
+    },
+    {
+      "from": "user",
+      "text": "Show my settings",
+      "at": "2026-11-02T08:10:00.000Z"
+    },
+    {
+      "from": "bot",
+      "text": "Here are your current settings:\n\n- Name: Alex\n- Language: English\n- Timezone: Europe/London\n- Week starts on: Monday\n- Conversation history kept for: 7 days\n- Weekly reminder: On — 08:00\n- Daily reminder: On — 08:00 (sent even on days with no events)\n- Event reminders: On — default 60 minutes before events\n- Old events: Keep (not deleted automatically); retention window setting: 30 days\n- Calendar provider: Google\n\nNo onboarding steps remain. There are no additional calendar providers available to connect.\n\nWant to change any setting? Tell me which one and the new value (for times use HH:MM).",
+      "at": "2026-11-02T08:10:00.000Z"
+    },
+    {
+      "from": "user",
+      "text": "Remind me 30 minutes before events instead",
+      "at": "2026-11-02T08:11:00.000Z"
+    },
+    {
+      "from": "bot",
+      "text": "All set — I changed your default event reminder to 30 minutes before events.",
+      "at": "2026-11-02T08:11:00.000Z"
+    }
+  ]
+}

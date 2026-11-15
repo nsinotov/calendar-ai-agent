@@ -10,9 +10,9 @@ I built it for my family. Each of us manages their own calendar by writing to a 
 
 ## Demo
 
-<!-- TODO: add a demo (GIF or screenshots of a chat) -->
+<p align="center"><img src="docs/demo.gif" alt="Chat with the bot in Telegram: a weekly summary, then adding, listing and cancelling events and changing a setting" width="360"></p>
 
-_Coming soon._
+A real run of the agent and LLM against a sample calendar; `pnpm demo:transcript` and `pnpm demo:record` regenerate it.
 
 ## Features
 
@@ -140,6 +140,7 @@ docker compose exec agent node dist/scripts/set-balance.js 20
 - `pnpm start`: run the production build
 - `pnpm add-user`: register a user with a role and their credentials (in Docker, see [Data and admin scripts](#data-and-admin-scripts))
 - `pnpm set-balance <usd>`: set the tracked LLM balance after a top-up (in Docker, see [Data and admin scripts](#data-and-admin-scripts))
+- `pnpm demo:transcript`, `pnpm demo:record`: regenerate the README demo (a real LLM run against a sample calendar, then a GIF; needs ffmpeg and `pnpm exec playwright install chromium`)
 - `pnpm typecheck`: type-check the project
 - `pnpm lint`: lint the project (ESLint)
 - `pnpm format`: format the project (Prettier); `pnpm format:check` only checks

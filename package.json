@@ -15,7 +15,9 @@
     "test": "tsx --test \"src/**/*.test.ts\"",
     "test:coverage": "tsx --test --experimental-test-coverage --test-coverage-exclude=\"src/**/*.test.ts\" \"src/**/*.test.ts\"",
     "add-user": "tsx --env-file=.env src/scripts/add-user.ts",
-    "set-balance": "tsx --env-file=.env src/scripts/set-balance.ts"
+    "set-balance": "tsx --env-file=.env src/scripts/set-balance.ts",
+    "demo:transcript": "tsx --env-file=.env src/scripts/demo/generate-transcript.ts",
+    "demo:record": "tsx src/scripts/demo/record.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",
@@ -30,6 +32,7 @@
     "@types/node": "^25.6.2",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
+    "playwright": "^1.64.1",
     "prettier": "^3.9.10",
     "tsup": "^8.4.0",
     "tsx": "^4.19.4",
